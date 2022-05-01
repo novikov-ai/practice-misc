@@ -6,7 +6,7 @@ import (
 	"golang.org/x/example/stringutil"
 )
 
-const greetings string = "Hello, OTUS!"
+const greetings = "Hello, OTUS!"
 
 func main() {
 	greetingsReversed := stringutil.Reverse(greetings)
