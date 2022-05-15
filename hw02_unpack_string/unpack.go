@@ -14,13 +14,8 @@ func Unpack(input string) (string, error) {
 	inputRunes := []rune(input)
 	inputRunesCount := len(inputRunes)
 
-	if input == "" {
-		return "", nil
-	}
-
-	if unicode.IsDigit(inputRunes[0]) {
-		return "", ErrInvalidString
-	}
+	const backSlash = `\`
+	isEscapedNext := false
 
 	var unpackedInput strings.Builder
 
@@ -28,10 +23,21 @@ func Unpack(input string) (string, error) {
 
 		currentRune := inputRunes[i]
 
+		isCurrentRuneSlash := string(currentRune) == backSlash
+
+		if isCurrentRuneSlash && !isEscapedNext {
+			isEscapedNext = true
+			continue
+		}
+
 		isCurrentRuneDigit := unicode.IsDigit(currentRune)
-		if isCurrentRuneDigit {
+		isEscapedInvalid := isEscapedNext && !isCurrentRuneDigit && !isCurrentRuneSlash
+
+		if (isCurrentRuneDigit && !isEscapedNext) || isEscapedInvalid {
 			return "", ErrInvalidString
 		}
+
+		isEscapedNext = false
 
 		repeatNumber := 1
 
@@ -40,6 +46,7 @@ func Unpack(input string) (string, error) {
 			nextRune := inputRunes[i+1]
 
 			skipNextRune := unicode.IsDigit(nextRune)
+
 			if skipNextRune {
 				repeatNumber, _ = strconv.Atoi(string(nextRune))
 				i++
@@ -47,6 +54,7 @@ func Unpack(input string) (string, error) {
 		}
 
 		repeatedValue := strings.Repeat(string(currentRune), repeatNumber)
+
 		unpackedInput.WriteString(repeatedValue)
 	}
 
