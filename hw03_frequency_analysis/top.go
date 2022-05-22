@@ -5,6 +5,9 @@ import (
 	"strings"
 )
 
+const returnAmount = 10
+const invalidSymbol = "-"
+
 type UniqueWord struct {
 	Name   string
 	Amount int
@@ -12,48 +15,77 @@ type UniqueWord struct {
 
 func Top10(s string) []string {
 
-	const topBoundNumber = 10
-
 	inputSplit := strings.Fields(s)
 
-	words := make(map[string]int)
+	uniqueWordsMap := make(map[string]int)
 
-	for _, v := range inputSplit {
+	for _, word := range inputSplit {
 
-		elem, ok := words[v]
+		if word == invalidSymbol {
+			continue
+		}
+
+		word = strings.ToLower(ExcludePunctuation(word))
+
+		elem, ok := uniqueWordsMap[word]
 		if ok {
-			words[v] = elem + 1
+			uniqueWordsMap[word] = elem + 1
 		} else {
-			words[v] = 1
+			uniqueWordsMap[word] = 1
 		}
 	}
 
-	if len(words) == 0 {
+	if len(uniqueWordsMap) == 0 {
 		return nil
 	}
 
-	sortedWords := make([]UniqueWord, 0)
+	uniqueWords := GetUniqueWordsSlice(uniqueWordsMap)
+	SortDesc(uniqueWords)
+
+	return GetTopResults(uniqueWords, returnAmount)
+}
+
+func ExcludePunctuation(word string) string {
+	excludeSymbols := [...]string{".", ",", ":", ";", "!", "?"}
+
+	for i := range excludeSymbols {
+		word = strings.Trim(word, excludeSymbols[i])
+	}
+
+	return word
+}
+
+func GetUniqueWordsSlice(words map[string]int) []UniqueWord {
+
+	uniqueWords := make([]UniqueWord, 0)
+
 	for key, value := range words {
-		sortedWords = append(sortedWords, UniqueWord{
+		uniqueWords = append(uniqueWords, UniqueWord{
 			Name:   key,
 			Amount: value})
 	}
 
-	sort.Slice(sortedWords, func(i, j int) bool {
+	return uniqueWords
+}
 
-		isAmountEqual := sortedWords[i].Amount == sortedWords[j].Amount
+func SortDesc(words []UniqueWord) {
+	sort.Slice(words, func(i, j int) bool {
+
+		isAmountEqual := words[i].Amount == words[j].Amount
 		if isAmountEqual {
-			return sortedWords[i].Name < sortedWords[j].Name
+			return words[i].Name < words[j].Name
 		}
 
-		return sortedWords[i].Amount > sortedWords[j].Amount
+		return words[i].Amount > words[j].Amount
 	})
+}
 
-	result := make([]string, topBoundNumber)
+func GetTopResults(words []UniqueWord, returnAmount int) []string {
+	result := make([]string, returnAmount)
 
 	i := 0
-	for _, value := range sortedWords {
-		if i < topBoundNumber {
+	for _, value := range words {
+		if i < returnAmount {
 			result[i] = value.Name
 			i++
 		}
