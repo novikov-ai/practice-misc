@@ -5,22 +5,22 @@ import (
 	"strings"
 )
 
-const returnAmount = 10
-const invalidSymbol = "-"
+const (
+	returnAmount  = 10
+	invalidSymbol = "-"
+)
 
 type UniqueWord struct {
 	Name   string
 	Amount int
 }
 
-func Top10(s string) []string {
-
-	inputSplit := strings.Fields(s)
+func Top10(input string) []string {
+	inputSplit := strings.Fields(input)
 
 	uniqueWordsMap := make(map[string]int)
 
 	for _, word := range inputSplit {
-
 		if word == invalidSymbol {
 			continue
 		}
@@ -46,7 +46,7 @@ func Top10(s string) []string {
 }
 
 func ExcludePunctuation(word string) string {
-	excludeSymbols := [...]string{".", ",", ":", ";", "!", "?"}
+	excludeSymbols := [...]string{".", ",", ":", ";", "!", "?", "(", ")", "[", "]", "{", "}", "?!", "!?", "..."}
 
 	for i := range excludeSymbols {
 		word = strings.Trim(word, excludeSymbols[i])
@@ -56,13 +56,13 @@ func ExcludePunctuation(word string) string {
 }
 
 func GetUniqueWordsSlice(words map[string]int) []UniqueWord {
-
 	uniqueWords := make([]UniqueWord, 0)
 
 	for key, value := range words {
 		uniqueWords = append(uniqueWords, UniqueWord{
 			Name:   key,
-			Amount: value})
+			Amount: value,
+		})
 	}
 
 	return uniqueWords
@@ -70,7 +70,6 @@ func GetUniqueWordsSlice(words map[string]int) []UniqueWord {
 
 func SortDesc(words []UniqueWord) {
 	sort.Slice(words, func(i, j int) bool {
-
 		isAmountEqual := words[i].Amount == words[j].Amount
 		if isAmountEqual {
 			return words[i].Name < words[j].Name
