@@ -1,9 +1,12 @@
 package hw03frequencyanalysis
 
 import (
+	"regexp"
 	"sort"
 	"strings"
 )
+
+var regexpPunctuation = regexp.MustCompile(`\.?,?;?:?!?\??\(?\)?\[?]?{?}?`)
 
 const (
 	returnAmount  = 10
@@ -25,14 +28,9 @@ func Top10(input string) []string {
 			continue
 		}
 
-		word = strings.ToLower(ExcludePunctuation(word))
+		word = strings.ToLower(regexpPunctuation.ReplaceAllString(word, ""))
 
-		elem, ok := uniqueWordsMap[word]
-		if ok {
-			uniqueWordsMap[word] = elem + 1
-		} else {
-			uniqueWordsMap[word] = 1
-		}
+		uniqueWordsMap[word]++
 	}
 
 	if len(uniqueWordsMap) == 0 {
@@ -43,16 +41,6 @@ func Top10(input string) []string {
 	SortDesc(uniqueWords)
 
 	return GetTopResults(uniqueWords, returnAmount)
-}
-
-func ExcludePunctuation(word string) string {
-	excludeSymbols := [...]string{".", ",", ":", ";", "!", "?", "(", ")", "[", "]", "{", "}", "?!", "!?", "..."}
-
-	for i := range excludeSymbols {
-		word = strings.Trim(word, excludeSymbols[i])
-	}
-
-	return word
 }
 
 func GetUniqueWordsSlice(words map[string]int) []UniqueWord {
@@ -70,8 +58,7 @@ func GetUniqueWordsSlice(words map[string]int) []UniqueWord {
 
 func SortDesc(words []UniqueWord) {
 	sort.Slice(words, func(i, j int) bool {
-		isAmountEqual := words[i].Amount == words[j].Amount
-		if isAmountEqual {
+		if words[i].Amount == words[j].Amount {
 			return words[i].Name < words[j].Name
 		}
 
@@ -82,11 +69,9 @@ func SortDesc(words []UniqueWord) {
 func GetTopResults(words []UniqueWord, returnAmount int) []string {
 	result := make([]string, returnAmount)
 
-	i := 0
-	for _, value := range words {
+	for i, value := range words {
 		if i < returnAmount {
 			result[i] = value.Name
-			i++
 		}
 	}
 
