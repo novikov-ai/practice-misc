@@ -18,23 +18,22 @@ type ListItem struct {
 
 type list struct {
 	Items      map[*ListItem]*ListItem
-	Count      int
 	Head, Tail *ListItem
 }
 
-func (l list) Len() int {
-	return l.Count
+func (l *list) Len() int {
+	return len(l.Items)
 }
 
-func (l list) Front() *ListItem {
+func (l *list) Front() *ListItem {
 	return l.Head
 }
 
-func (l list) Back() *ListItem {
+func (l *list) Back() *ListItem {
 	return l.Tail
 }
 
-func (l list) PushFront(v interface{}) *ListItem {
+func (l *list) PushFront(v interface{}) *ListItem {
 	node := &ListItem{
 		Value: v,
 		Next:  nil,
@@ -47,9 +46,7 @@ func (l list) PushFront(v interface{}) *ListItem {
 
 	l.Items[node] = node
 
-	l.Count++
-
-	if l.Count == 1 {
+	if l.Len() == 1 {
 		l.Head = node
 		l.Tail = node
 		return node
@@ -64,7 +61,7 @@ func (l list) PushFront(v interface{}) *ListItem {
 	return node
 }
 
-func (l list) PushBack(v interface{}) *ListItem {
+func (l *list) PushBack(v interface{}) *ListItem {
 	node := &ListItem{
 		Value: v,
 		Next:  nil,
@@ -77,9 +74,7 @@ func (l list) PushBack(v interface{}) *ListItem {
 
 	l.Items[node] = node
 
-	l.Count++
-
-	if l.Count == 1 {
+	if l.Len() == 1 {
 		l.Head = node
 		l.Tail = node
 		return node
@@ -94,45 +89,45 @@ func (l list) PushBack(v interface{}) *ListItem {
 	return node
 }
 
-// todo: O(1). It's O(n) now
-func (l list) Remove(i *ListItem) {
-	if l.Count == 0 {
+func (l *list) Remove(i *ListItem) {
+	if l.Len() == 0 {
 		return
 	}
 
-	if l.Count == 1 && l.Head == i {
+	current := l.Items[i]
+
+	delete(l.Items, i)
+
+	if l.Len() == 0 && l.Head == i {
 		l.Head, l.Tail = nil, nil
-		l.Count = 0
 		return
 	}
 
-	current := l.Head
-	for {
-		if current == i {
-			next := current.Next
-			next.Prev = nil
+	next := current.Next
+	prev := current.Prev
 
-			current.Next = nil
-
-			l.Head = next
-			l.Count--
-			return
-		}
-
-		current = current.Next
-		if current == nil {
-			return
-		}
+	if next == nil {
+		prev.Next = nil
+		l.Tail = prev
+		return
 	}
+
+	if prev == nil {
+		next.Prev = nil
+		l.Head = next
+		return
+	}
+
+	prev.Next = next
+	next.Prev = prev
 }
 
-// todo: O(1). It's O(n) now
-func (l list) MoveToFront(i *ListItem) {
-	if l.Count < 2 || i == l.Head {
+func (l *list) MoveToFront(i *ListItem) {
+	if l.Len() < 2 || i == l.Head {
 		return
 	}
 
-	if l.Tail == i && l.Count == 2 {
+	if l.Tail == i && l.Len() == 2 {
 		prevHead := l.Head
 
 		prevHead.Next = nil
@@ -147,39 +142,29 @@ func (l list) MoveToFront(i *ListItem) {
 		return
 	}
 
-	current := l.Head
-	for {
-		if current == i {
-			prev := current.Prev
-			next := current.Next
+	current := l.Items[i]
 
-			prev.Next = next
+	prev := current.Prev
+	next := current.Next
 
-			if l.Tail == current {
-				l.Tail = prev
-			} else {
-				next.Prev = prev
-			}
+	prev.Next = next
 
-			prevHead := l.Head
-			prevHead.Prev = current
-
-			current.Next = prevHead
-			current.Prev = nil
-
-			l.Head = current
-
-			return
-		}
-
-		current = current.Next
-		if current == nil {
-			return
-		}
+	if l.Tail == current {
+		l.Tail = prev
+	} else {
+		next.Prev = prev
 	}
 
+	prevHead := l.Head
+	prevHead.Prev = current
+
+	current.Next = prevHead
+	current.Prev = nil
+
+	l.Head = current
 }
 
 func NewList() List {
+
 	return new(list)
 }
