@@ -17,20 +17,20 @@ type ListItem struct {
 }
 
 type list struct {
-	Items      map[*ListItem]*ListItem
-	Head, Tail *ListItem
+	items      map[*ListItem]*ListItem
+	head, tail *ListItem
 }
 
 func (l *list) Len() int {
-	return len(l.Items)
+	return len(l.items)
 }
 
 func (l *list) Front() *ListItem {
-	return l.Head
+	return l.head
 }
 
 func (l *list) Back() *ListItem {
-	return l.Tail
+	return l.tail
 }
 
 func (l *list) PushFront(v interface{}) *ListItem {
@@ -40,23 +40,19 @@ func (l *list) PushFront(v interface{}) *ListItem {
 		Prev:  nil,
 	}
 
-	if l.Items == nil {
-		l.Items = make(map[*ListItem]*ListItem)
-	}
-
-	l.Items[node] = node
+	l.items[node] = node
 
 	if l.Len() == 1 {
-		l.Head = node
-		l.Tail = node
+		l.head = node
+		l.tail = node
 		return node
 	}
 
-	node.Next = l.Head
+	node.Next = l.head
 
-	l.Head.Prev = node
+	l.head.Prev = node
 
-	l.Head = node
+	l.head = node
 
 	return node
 }
@@ -68,23 +64,19 @@ func (l *list) PushBack(v interface{}) *ListItem {
 		Prev:  nil,
 	}
 
-	if l.Items == nil {
-		l.Items = make(map[*ListItem]*ListItem)
-	}
-
-	l.Items[node] = node
+	l.items[node] = node
 
 	if l.Len() == 1 {
-		l.Head = node
-		l.Tail = node
+		l.head = node
+		l.tail = node
 		return node
 	}
 
-	node.Prev = l.Tail
+	node.Prev = l.tail
 
-	l.Tail.Next = node
+	l.tail.Next = node
 
-	l.Tail = node
+	l.tail = node
 
 	return node
 }
@@ -94,12 +86,12 @@ func (l *list) Remove(i *ListItem) {
 		return
 	}
 
-	current := l.Items[i]
+	current := l.items[i]
 
-	delete(l.Items, i)
+	delete(l.items, i)
 
-	if l.Len() == 0 && l.Head == i {
-		l.Head, l.Tail = nil, nil
+	if l.Len() == 0 && l.head == i {
+		l.head, l.tail = nil, nil
 		return
 	}
 
@@ -108,13 +100,13 @@ func (l *list) Remove(i *ListItem) {
 
 	if next == nil {
 		prev.Next = nil
-		l.Tail = prev
+		l.tail = prev
 		return
 	}
 
 	if prev == nil {
 		next.Prev = nil
-		l.Head = next
+		l.head = next
 		return
 	}
 
@@ -123,18 +115,18 @@ func (l *list) Remove(i *ListItem) {
 }
 
 func (l *list) MoveToFront(i *ListItem) {
-	if l.Len() < 2 || i == l.Head {
+	if l.Len() < 2 || i == l.head {
 		return
 	}
 
-	if l.Tail == i && l.Len() == 2 {
-		prevHead := l.Head
+	if l.tail == i && l.Len() == 2 {
+		prevHead := l.head
 
 		prevHead.Next = nil
 		prevHead.Prev = i
 
-		l.Tail = prevHead
-		l.Head = i
+		l.tail = prevHead
+		l.head = i
 
 		i.Next = prevHead
 		i.Prev = nil
@@ -142,29 +134,31 @@ func (l *list) MoveToFront(i *ListItem) {
 		return
 	}
 
-	current := l.Items[i]
+	current := l.items[i]
 
 	prev := current.Prev
 	next := current.Next
 
 	prev.Next = next
 
-	if l.Tail == current {
-		l.Tail = prev
+	if l.tail == current {
+		l.tail = prev
 	} else {
 		next.Prev = prev
 	}
 
-	prevHead := l.Head
+	prevHead := l.head
 	prevHead.Prev = current
 
 	current.Next = prevHead
 	current.Prev = nil
 
-	l.Head = current
+	l.head = current
 }
 
 func NewList() List {
 
-	return new(list)
+	return &list{
+		items: make(map[*ListItem]*ListItem),
+	}
 }
