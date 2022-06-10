@@ -34,51 +34,58 @@ func (l *list) Back() *ListItem {
 }
 
 func (l *list) PushFront(v interface{}) *ListItem {
-	node := &ListItem{
-		Value: v,
-		Next:  nil,
-		Prev:  nil,
+	item, isSetUpped := pushToList(l, v)
+	if isSetUpped {
+		return item
 	}
 
-	l.items[node] = node
+	item.Next = l.head
+	l.head.Prev = item
 
-	if l.Len() == 1 {
-		l.head = node
-		l.tail = node
-		return node
-	}
+	l.head = item
 
-	node.Next = l.head
-
-	l.head.Prev = node
-
-	l.head = node
-
-	return node
+	return item
 }
 
 func (l *list) PushBack(v interface{}) *ListItem {
-	node := &ListItem{
+	item, isSetUpped := pushToList(l, v)
+	if isSetUpped {
+		return item
+	}
+
+	item.Prev = l.tail
+	l.tail.Next = item
+
+	l.tail = item
+
+	return item
+}
+
+func pushToList(l *list, v interface{}) (*ListItem, bool) {
+	item := appendToList(l, v)
+	isSetUpped := trySetUpHeadAndTail(l, item)
+	return item, isSetUpped
+}
+
+func appendToList(l *list, v interface{}) *ListItem {
+	item := &ListItem{
 		Value: v,
 		Next:  nil,
 		Prev:  nil,
 	}
+	l.items[item] = item
 
-	l.items[node] = node
+	return item
+}
 
-	if l.Len() == 1 {
-		l.head = node
-		l.tail = node
-		return node
+func trySetUpHeadAndTail(l *list, item *ListItem) bool {
+	if l.Len() != 1 {
+		return false
 	}
 
-	node.Prev = l.tail
-
-	l.tail.Next = node
-
-	l.tail = node
-
-	return node
+	l.tail = item
+	l.head = item
+	return true
 }
 
 func (l *list) Remove(i *ListItem) {
@@ -86,14 +93,14 @@ func (l *list) Remove(i *ListItem) {
 		return
 	}
 
-	current := l.items[i]
+	defer delete(l.items, i)
 
-	delete(l.items, i)
-
-	if l.Len() == 0 && l.head == i {
+	if l.Len() == 1 && l.head == i {
 		l.head, l.tail = nil, nil
 		return
 	}
+
+	current := l.items[i]
 
 	next := current.Next
 	prev := current.Prev
@@ -116,21 +123,6 @@ func (l *list) Remove(i *ListItem) {
 
 func (l *list) MoveToFront(i *ListItem) {
 	if l.Len() < 2 || i == l.head {
-		return
-	}
-
-	if l.tail == i && l.Len() == 2 {
-		prevHead := l.head
-
-		prevHead.Next = nil
-		prevHead.Prev = i
-
-		l.tail = prevHead
-		l.head = i
-
-		i.Next = prevHead
-		i.Prev = nil
-
 		return
 	}
 

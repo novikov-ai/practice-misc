@@ -18,17 +18,10 @@ func (cache *lruCache) Set(key Key, value interface{}) bool {
 	item, exists := cache.items[key]
 	if !exists {
 		cache.queue.PushFront(cacheItem{key: key, value: value})
-		pushedItem := cache.queue.Front()
+		cache.items[key] = cache.queue.Front()
 
-		cache.items[key] = pushedItem
+		deleteUnusedIfOverflow(cache)
 
-		// todo: add func
-		if len(cache.items) > cache.capacity {
-			lastItem := cache.queue.Back()
-			cache.queue.Remove(lastItem)
-
-			delete(cache.items, lastItem.Value.(cacheItem).key)
-		}
 	} else {
 		updatingCacheItem := item.Value.(cacheItem)
 		updatingCacheItem.value = value
@@ -41,13 +34,24 @@ func (cache *lruCache) Set(key Key, value interface{}) bool {
 	return exists
 }
 
+func deleteUnusedIfOverflow(cache *lruCache) {
+	if len(cache.items) <= cache.capacity {
+		return
+	}
+
+	lastItem := cache.queue.Back()
+	cache.queue.Remove(lastItem)
+
+	delete(cache.items, lastItem.Value.(cacheItem).key)
+}
+
 func (cache *lruCache) Get(key Key) (interface{}, bool) {
 	item, exists := cache.items[key]
 
 	var value interface{}
 
 	if exists {
-		cache.queue.PushFront(item)
+		cache.queue.MoveToFront(item)
 		value = item.Value.(cacheItem).value
 	}
 
