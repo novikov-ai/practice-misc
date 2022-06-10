@@ -1,6 +1,7 @@
 package hw04lrucache
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -50,7 +51,38 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		c := NewCache(10)
+
+		cacheSize := 10
+		itemKeyPrefix := "item #"
+
+		for i := 0; i < cacheSize; i++ {
+			key := Key(fmt.Sprintf("%s%v", itemKeyPrefix, i))
+			c.Set(key, i*i)
+
+			_, ok := c.Get(key)
+			require.True(t, ok)
+		}
+
+		c.Clear()
+
+		for i := 0; i < cacheSize; i++ {
+			key := Key(fmt.Sprintf("%s%v", itemKeyPrefix, i))
+
+			_, ok := c.Get(key)
+			require.False(t, ok)
+		}
+
+		newItemKey := Key("new item")
+		c.Set(newItemKey, 1)
+
+		_, ok := c.Get("new item")
+		require.True(t, ok)
+
+		c.Clear()
+
+		_, ok = c.Get("new item")
+		require.False(t, ok)
 	})
 }
 
@@ -76,4 +108,76 @@ func TestCacheMultithreading(t *testing.T) {
 	}()
 
 	wg.Wait()
+}
+
+func TestCacheKnockOutOverflow(t *testing.T) {
+	t.Run("knocked out if overflow", func(t *testing.T) {
+		c := NewCache(10)
+
+		cacheSize := 10
+
+		for i := 0; i < cacheSize; i++ {
+			key := getKeyBasedOnIndex(i)
+			c.Set(key, i*i)
+
+			_, ok := c.Get(key)
+			require.True(t, ok)
+		}
+
+		knockoutKey := Key("bouncer")
+		c.Set(Key(knockoutKey), 42)
+
+		_, isFirstAtCache := c.Get(getKeyBasedOnIndex(0))
+		require.False(t, isFirstAtCache)
+
+		_, isBouncerAtCache := c.Get(knockoutKey)
+		require.True(t, isBouncerAtCache)
+	})
+}
+
+func TestCacheKnockOutUnused(t *testing.T) {
+	t.Run("knocked out unused items", func(t *testing.T) {
+
+		cacheSize := 10
+		c := NewCache(cacheSize)
+
+		for i := 0; i < cacheSize; i++ {
+			key := getKeyBasedOnIndex(i)
+			c.Set(key, i*i)
+		}
+
+		// simulating frequent usage of even items
+		for i := 0; i < cacheSize; i++ {
+			if i%2 != 0 {
+				continue
+			}
+			key := getKeyBasedOnIndex(i)
+			_, ok := c.Get(key)
+			require.True(t, ok)
+		}
+
+		// unused: item #1, item #3, item #5, item #7, item #9
+
+		for i := 10; i < 15; i++ {
+			key := getKeyBasedOnIndex(i)
+			c.Set(key, i*i)
+		}
+
+		for i := 0; i < 10; i++ {
+			key := getKeyBasedOnIndex(i)
+			if i%2 == 0 {
+				_, ok := c.Get(key)
+				require.True(t, ok)
+				continue
+			}
+
+			_, ok := c.Get(key)
+			require.False(t, ok)
+		}
+	})
+}
+
+func getKeyBasedOnIndex(i int) Key {
+	const itemKeyPrefix = "item #"
+	return Key(fmt.Sprintf("%s%v", itemKeyPrefix, i))
 }
