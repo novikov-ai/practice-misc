@@ -1,5 +1,7 @@
 package hw04lrucache
 
+import "sync"
+
 type Key string
 
 type Cache interface {
@@ -12,16 +14,19 @@ type lruCache struct {
 	capacity int
 	queue    List
 	items    map[Key]*ListItem
+	mutex    sync.Mutex
 }
 
 func (cache *lruCache) Set(key Key, value interface{}) bool {
+	cache.mutex.Lock()
+
 	item, exists := cache.items[key]
+
 	if !exists {
 		cache.queue.PushFront(cacheItem{key: key, value: value})
 		cache.items[key] = cache.queue.Front()
 
 		deleteUnusedIfOverflow(cache)
-
 	} else {
 		updatingCacheItem := item.Value.(cacheItem)
 		updatingCacheItem.value = value
@@ -30,6 +35,8 @@ func (cache *lruCache) Set(key Key, value interface{}) bool {
 
 		cache.queue.MoveToFront(item)
 	}
+
+	cache.mutex.Unlock()
 
 	return exists
 }
@@ -46,14 +53,17 @@ func deleteUnusedIfOverflow(cache *lruCache) {
 }
 
 func (cache *lruCache) Get(key Key) (interface{}, bool) {
-	item, exists := cache.items[key]
+	cache.mutex.Lock()
 
+	item, exists := cache.items[key]
 	var value interface{}
 
 	if exists {
 		cache.queue.MoveToFront(item)
 		value = item.Value.(cacheItem).value
 	}
+
+	cache.mutex.Unlock()
 
 	return value, exists
 }

@@ -18,6 +18,7 @@ func listInit() List {
 	}
 	return l // 13 11 9 7 5 3 1 0 2 4 6 8 10 12 14
 }
+
 func getItemByValue(l List, v int) *ListItem {
 	item := l.Front()
 	for {
