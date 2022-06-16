@@ -54,6 +54,7 @@ func deleteUnusedIfOverflow(cache *lruCache) {
 
 func (cache *lruCache) Get(key Key) (interface{}, bool) {
 	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
 
 	item, exists := cache.items[key]
 	var value interface{}
@@ -63,12 +64,13 @@ func (cache *lruCache) Get(key Key) (interface{}, bool) {
 		value = item.Value.(cacheItem).value
 	}
 
-	cache.mutex.Unlock()
-
 	return value, exists
 }
 
 func (cache *lruCache) Clear() {
+	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
+
 	cache.queue = NewList()
 	cache.items = make(map[Key]*ListItem, cache.capacity)
 }
