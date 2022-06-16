@@ -17,12 +17,12 @@ type ListItem struct {
 }
 
 type list struct {
-	items      map[*ListItem]*ListItem
 	head, tail *ListItem
+	length     int
 }
 
 func (l *list) Len() int {
-	return len(l.items)
+	return l.length
 }
 
 func (l *list) Front() *ListItem {
@@ -62,19 +62,18 @@ func (l *list) PushBack(v interface{}) *ListItem {
 }
 
 func pushToList(l *list, v interface{}) (*ListItem, bool) {
-	item := appendToList(l, v)
+	l.length++
+	item := newListItem(v)
 	isSetUpped := trySetUpHeadAndTail(l, item)
 	return item, isSetUpped
 }
 
-func appendToList(l *list, v interface{}) *ListItem {
+func newListItem(v interface{}) *ListItem {
 	item := &ListItem{
 		Value: v,
 		Next:  nil,
 		Prev:  nil,
 	}
-	l.items[item] = item
-
 	return item
 }
 
@@ -93,17 +92,15 @@ func (l *list) Remove(i *ListItem) {
 		return
 	}
 
-	defer delete(l.items, i)
+	l.length--
 
-	if l.Len() == 1 && l.head == i {
+	if l.Len() == 0 {
 		l.head, l.tail = nil, nil
 		return
 	}
 
-	current := l.items[i]
-
-	next := current.Next
-	prev := current.Prev
+	next := i.Next
+	prev := i.Prev
 
 	if next == nil {
 		prev.Next = nil
@@ -126,30 +123,26 @@ func (l *list) MoveToFront(i *ListItem) {
 		return
 	}
 
-	current := l.items[i]
-
-	prev := current.Prev
-	next := current.Next
+	prev := i.Prev
+	next := i.Next
 
 	prev.Next = next
 
-	if l.tail == current {
+	if l.tail == i {
 		l.tail = prev
 	} else {
 		next.Prev = prev
 	}
 
 	prevHead := l.head
-	prevHead.Prev = current
+	prevHead.Prev = i
 
-	current.Next = prevHead
-	current.Prev = nil
+	i.Next = prevHead
+	i.Prev = nil
 
-	l.head = current
+	l.head = i
 }
 
 func NewList() List {
-	return &list{
-		items: make(map[*ListItem]*ListItem),
-	}
+	return new(list)
 }
