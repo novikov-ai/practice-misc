@@ -2,66 +2,67 @@ package hw05parallelexecution
 
 import (
 	"errors"
+	"sync"
 )
 
 var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
-var ErrErrorsInvalidArgs = errors.New("arguments invalid")
+var ErrErrorsInvalidArgs = errors.New("invalid arguments")
 
 type Task func() error
 
+type ErrorsLimitCalc struct {
+	Current, Max int
+}
+
 // Run starts tasks in n goroutines and stops its work when receiving m errors from tasks.
 func Run(tasks []Task, n, m int) error {
+	if n <= 0 || m < 0 {
+		return ErrErrorsInvalidArgs
+	}
+
 	if m == 0 {
 		return ErrErrorsLimitExceeded
 	}
 
-	if n*len(tasks) == 0 {
-		return ErrErrorsInvalidArgs
-	}
-
 	jobs := make(chan Task)
-	go producer(tasks, jobs)
+	errorsCalc := ErrorsLimitCalc{Current: 0, Max: m}
 
-	done := make(chan struct{})
-	errors := make(chan error)
+	mx := sync.RWMutex{}
+	wg := sync.WaitGroup{}
 
 	for i := 0; i < n; i++ {
-		go consumer(done, jobs, errors)
+		go consumer(jobs, &errorsCalc, &mx, &wg)
 	}
 
-	completed := 0
-	for {
-		select {
-		case <-errors:
-			m--
-			if m == 0 {
-				return ErrErrorsLimitExceeded
-			}
+	defer wg.Wait()
+	defer close(jobs)
 
-		case <-done:
-			completed++
-			if completed == n {
-				return nil
-			}
+	for _, task := range tasks {
+		jobs <- task
+		if errorsCalc.LimitExceeded(&mx) {
+			return ErrErrorsLimitExceeded
 		}
 	}
 
 	return nil
 }
 
-func producer(tasks []Task, jobs chan<- Task) {
-	for _, task := range tasks {
-		jobs <- task
-	}
-	close(jobs)
+func (errorsCalc *ErrorsLimitCalc) LimitExceeded(mx *sync.RWMutex) bool {
+	mx.RLock()
+	defer mx.RUnlock()
+	return errorsCalc.Current >= errorsCalc.Max
 }
 
-func consumer(done chan struct{}, jobs <-chan Task, errors chan error) {
+func consumer(jobs <-chan Task, errorsCalc *ErrorsLimitCalc, mx *sync.RWMutex, wg *sync.WaitGroup) {
+	defer wg.Done()
+	wg.Add(1)
+
 	for job := range jobs {
 		err := job()
 		if err != nil {
-			errors <- err
+			mx.Lock()
+			errorsCalc.Current++
+			mx.Unlock()
 		}
 	}
-	done <- struct{}{}
 }
