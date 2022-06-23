@@ -69,18 +69,21 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("if M = 0", func(t *testing.T) {
-
 		tasks := make([]Task, 0)
 		err := Run(tasks, 3, 0)
 		require.Truef(t, errors.Is(err, ErrErrorsLimitExceeded), "actual err - %v", err)
 	})
 
 	t.Run("if N or M has invalid arguments", func(t *testing.T) {
-
 		tasks := make([]Task, 0)
+		invalidArgs := [][]int{
+			{0, 0}, {-3, 0}, {-1, 3}, {3, -1}, {-3, -3},
+		}
 
-		// todo: add case table
-		err := Run(tasks, -1, 0)
-		require.Truef(t, errors.Is(err, ErrErrorsLimitExceeded), "actual err - %v", err)
+		for _, args := range invalidArgs {
+			args := args
+			err := Run(tasks, args[0], args[1])
+			require.Truef(t, errors.Is(err, ErrErrorsInvalidArgs), "actual err - %v", err)
+		}
 	})
 }
