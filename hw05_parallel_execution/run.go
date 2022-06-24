@@ -67,10 +67,8 @@ func consumer(jobs <-chan Task, errorsCalc *ErrorsLimitCalc, wg *sync.WaitGroup)
 
 	for job := range jobs {
 		err := job()
-		if err == nil {
-			continue
+		if err != nil {
+			errorsCalc.IncrementErrors()
 		}
-
-		errorsCalc.IncrementErrors()
 	}
 }
