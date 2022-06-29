@@ -12,6 +12,8 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	out := in
 
 	for _, stage := range stages {
+		stage := stage
+
 		select {
 		case <-done:
 			return nil
@@ -23,7 +25,7 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	return out
 }
 
-func executor(done, input Out) Out {
+func executor(done, input In) Out {
 	outStream := make(chan interface{})
 
 	go func() {
