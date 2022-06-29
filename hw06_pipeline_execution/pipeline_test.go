@@ -90,4 +90,40 @@ func TestPipeline(t *testing.T) {
 		require.Len(t, result, 0)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
+
+	t.Run("only one stage", func(t *testing.T) {
+		stages := stages[:1]
+
+		in := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(in)
+		}()
+
+		result := make([]int, 0, 5)
+		for num := range ExecutePipeline(in, nil, stages...) {
+			result = append(result, num.(int))
+		}
+
+		require.ElementsMatch(t, data, result)
+	})
+
+	t.Run("empty input", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(in)
+		}()
+
+		result := ExecutePipeline(in, nil, stages...)
+		require.Equal(t, 0, len(result))
+	})
 }
