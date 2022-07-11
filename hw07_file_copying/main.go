@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 )
 
 var (
@@ -18,5 +19,17 @@ func init() {
 
 func main() {
 	flag.Parse()
-	// Place your code here.
+
+	if len(from)*len(to) == 0 {
+		fmt.Println("Provide 'from' & 'to' flags")
+		return
+	}
+
+	err := Copy(from, to, offset, limit)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("failed")
+		return
+	}
+	fmt.Println("success")
 }
