@@ -21,15 +21,14 @@ func main() {
 	flag.Parse()
 
 	if len(from)*len(to) == 0 {
-		fmt.Println("Provide 'from' & 'to' flags")
+		fmt.Println("Arguments exception. Provide valid 'from' and 'to' flags.")
 		return
 	}
 
 	err := Copy(from, to, offset, limit)
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("failed")
+		fmt.Println("failed: ", err)
 		return
 	}
-	fmt.Println("success")
+	fmt.Println("copied")
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"testing"
 
@@ -80,7 +81,7 @@ func TestCopyInvalidFiles(t *testing.T) {
 	src := "/dev/urandom"
 	dstFilePath := fmt.Sprintf("%s%s", TestDataTempPath, "test_invalid_args.txt")
 
-	t.Run("ads", func(t *testing.T) {
+	t.Run("Coping invalid files.", func(t *testing.T) {
 		err := Copy(src, dstFilePath, 0, 0)
 		require.True(t, err.Error() == ErrUnsupportedFile.Error())
 	})
@@ -136,19 +137,38 @@ func TestCopy(t *testing.T) {
 }
 
 func isEqualFiles(first, second os.File) (bool, error) {
-	firstFileInfo, err := first.Stat()
+	firstFileBytes, err := getFileBytes(&first)
 	if err != nil {
 		return false, err
 	}
-	firstFileBytes := ReadBytes(&first, 0, firstFileInfo.Size())
 
-	secondFileInfo, err := second.Stat()
+	secondFileBytes, err := getFileBytes(&second)
 	if err != nil {
 		return false, err
 	}
-	secondFileBytes := ReadBytes(&second, 0, secondFileInfo.Size())
 
 	return bytes.Equal(firstFileBytes, secondFileBytes), nil
+}
+
+func getFileBytes(file *os.File) ([]byte, error) {
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	return readBytes(file, 0, fileInfo.Size()), nil
+}
+
+func readBytes(file *os.File, offset, limit int64) []byte {
+	buffer := make([]byte, limit)
+	bytesRead, err := file.ReadAt(buffer, offset)
+	if err == io.EOF {
+		if len(buffer) > 0 {
+			return buffer[0:bytesRead]
+		}
+
+		return nil
+	}
+	return buffer[0:bytesRead]
 }
 
 func getFileSizeFromPath(filePath string) (int64, error) {
