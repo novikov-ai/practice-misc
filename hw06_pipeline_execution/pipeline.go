@@ -31,7 +31,11 @@ func Execute(done, in In) <-chan interface{} {
 				if !open {
 					return
 				}
-				outputStream <- value
+				select {
+				case <-done:
+					return
+				case outputStream <- value:
+				}
 			}
 		}
 	}()
