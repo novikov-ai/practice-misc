@@ -2,10 +2,10 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"io"
 	"os"
+	"time"
 
 	"github.com/cheggaaa/pb/v3"
 )
@@ -52,60 +52,71 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		limit = fileSize
 	}
 
-	progressBar := progressBarInit(offset, limit, fileSize)
-	inputBytes := ReadBytesWithProgress(srcFile, offset, limit, progressBar)
-
-	reader := bytes.NewReader(inputBytes)
-	writer := bufio.NewWriter(destFile)
-
-	_, err = io.CopyN(writer, reader, limit)
-	if err != nil && !errors.Is(err, io.EOF) {
+	_, err = srcFile.Seek(offset, 0)
+	if err != nil {
 		return err
 	}
 
-	progressBar.Finish()
+	bar := progressBarInit(offset, limit, fileSize)
+
+	reader := bufio.NewReader(srcFile)
+	proxyReader := bar.NewProxyReader(reader)
+
+	writer := bufio.NewWriter(destFile)
+
+	err = WriteFromReader(proxyReader, writer, int(limit))
+	if err != nil {
+		return err
+	}
+
+	progressBarFinish(bar)
 
 	return nil
 }
 
-func ReadBytesWithProgress(file *os.File, offset, limit int64, progressBar *pb.ProgressBar) []byte {
-	buffer := make([]byte, limit)
-	reader := bufio.NewReader(file)
-
-	var byteIndex, bytesRead int64
-
+func WriteFromReader(proxyReader *pb.Reader, writer *bufio.Writer, limit int) error {
+	buffer := make([]byte, 100)
 	for {
-		symbol, err := reader.ReadByte()
+		n, err := proxyReader.Read(buffer)
 		if errors.Is(err, io.EOF) {
 			break
 		} else if err != nil {
-			return nil
+			return err
 		}
 
-		if byteIndex < offset {
-			byteIndex++
-			continue
+		if n >= limit {
+			n = limit
+		}
+		_, err = writer.Write(buffer[:n])
+		if err != nil {
+			return err
 		}
 
-		buffer[bytesRead] = symbol
-		bytesRead++
-
-		progressBar.Increment()
-
-		if bytesRead == limit {
+		limit -= n
+		if limit <= 0 {
 			break
 		}
 	}
 
-	return buffer[0:bytesRead]
+	return writer.Flush()
 }
 
 func progressBarInit(offset, limit, fileSize int64) *pb.ProgressBar {
-	progressBarMaxValue := limit
+	pb := pb.New64(getSizeOfFileCopy(offset, limit, fileSize)).SetRefreshRate(time.Millisecond * 10)
+	return pb.Start()
+}
+
+func progressBarFinish(bar *pb.ProgressBar) {
+	bar.SetCurrent(bar.Total())
+	bar.Finish()
+}
+
+func getSizeOfFileCopy(offset, limit, fileSize int64) int64 {
+	size := limit
 	if limit > fileSize {
-		progressBarMaxValue = fileSize
+		size = fileSize
 	} else if offset+limit > fileSize {
-		progressBarMaxValue = fileSize - offset
+		size = fileSize - offset
 	}
-	return pb.Start64(progressBarMaxValue)
+	return size
 }
