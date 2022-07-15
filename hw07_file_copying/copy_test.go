@@ -13,6 +13,7 @@ import (
 
 const (
 	TestDataPath    = "testdata/"
+	TempDirPrefix   = "temp_"
 	TempFilePrefix  = "test_*.txt"
 	InvalidFilePath = "/dev/urandom"
 	SourceFilePath  = "testdata/input.txt"
@@ -93,17 +94,17 @@ func TestCopy(t *testing.T) {
 		{outputPath: "out_offset6000_limit1000.txt", offset: 6000, limit: 1000},
 	}
 
-	tmpDir, err := os.MkdirTemp("", "")
+	tmpDirPath, err := os.MkdirTemp(TestDataPath, TempDirPrefix)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer os.RemoveAll(tmpDirPath)
 
 	for _, testCase := range testCases {
 		testCase := testCase
 
 		t.Run(fmt.Sprintf("Reference %s\n", testCase.outputPath), func(t *testing.T) {
-			tmpFile, err := os.CreateTemp("", TempFilePrefix)
+			tmpFile, err := os.CreateTemp(tmpDirPath, TempFilePrefix)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -180,12 +181,12 @@ func getFileSizeFromPath(filePath string) (int64, error) {
 func initTempStorage(t *testing.T) (string, *os.File) {
 	t.Helper()
 
-	tmpDirPath, err := os.MkdirTemp("", "")
+	tmpDirPath, err := os.MkdirTemp(TestDataPath, TempDirPrefix)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	tmpFile, err := os.CreateTemp("", TempFilePrefix)
+	tmpFile, err := os.CreateTemp(tmpDirPath, TempFilePrefix)
 	if err != nil {
 		t.Fatal(err)
 	}
