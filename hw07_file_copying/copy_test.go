@@ -12,17 +12,15 @@ import (
 )
 
 const (
-	TestDataPath     = "testdata/"
-	TestDataTempPath = "testdata/temp/"
-	SourceFilePath   = "testdata/input.txt"
+	TestDataPath    = "testdata/"
+	TempFilePrefix  = "test_*.txt"
+	InvalidFilePath = "/dev/urandom"
+	SourceFilePath  = "testdata/input.txt"
 )
 
 func TestCopyOffsetValue(t *testing.T) {
-	err := os.Mkdir(TestDataTempPath, 0o740)
-	if err != nil && !os.IsExist(err) {
-		require.Nil(t, err)
-	}
-	dstFilePath := fmt.Sprintf("%s%s", TestDataTempPath, "test_offset_value.txt")
+	tmpDirPath, tmpFile := initTempStorage(t)
+	defer cleanUpTempStorage(t, tmpDirPath, tmpFile)
 
 	fileSize, err := getFileSizeFromPath(SourceFilePath)
 	require.Nil(t, err)
@@ -40,7 +38,7 @@ func TestCopyOffsetValue(t *testing.T) {
 	for _, testCase := range testCases {
 		testCase := testCase
 		t.Run(testCase.testName, func(t *testing.T) {
-			err = Copy(SourceFilePath, dstFilePath, testCase.offsetValue, 0)
+			err = Copy(SourceFilePath, tmpFile.Name(), testCase.offsetValue, 0)
 			if testCase.validCase {
 				require.Nil(t, err)
 			} else {
@@ -48,16 +46,11 @@ func TestCopyOffsetValue(t *testing.T) {
 			}
 		})
 	}
-
-	err = os.Remove(dstFilePath)
-	assert.Nil(t, err)
-
-	err = os.Remove(TestDataTempPath)
-	assert.Nil(t, err)
 }
 
 func TestCopyInvalidArguments(t *testing.T) {
-	dstFilePath := fmt.Sprintf("%s%s", TestDataTempPath, "test_invalid_args.txt")
+	tmpDirPath, tmpFile := initTempStorage(t)
+	defer cleanUpTempStorage(t, tmpDirPath, tmpFile)
 
 	testCases := []struct {
 		offset, limit int64
@@ -71,18 +64,18 @@ func TestCopyInvalidArguments(t *testing.T) {
 		testCase := testCase
 
 		t.Run("Invalid args", func(t *testing.T) {
-			err := Copy(SourceFilePath, dstFilePath, testCase.offset, testCase.limit)
+			err := Copy(SourceFilePath, tmpFile.Name(), testCase.offset, testCase.limit)
 			require.True(t, err.Error() == ErrWrongArguments.Error())
 		})
 	}
 }
 
 func TestCopyInvalidFiles(t *testing.T) {
-	src := "/dev/urandom"
-	dstFilePath := fmt.Sprintf("%s%s", TestDataTempPath, "test_invalid_args.txt")
+	tmpDirPath, tmpFile := initTempStorage(t)
+	defer cleanUpTempStorage(t, tmpDirPath, tmpFile)
 
 	t.Run("Coping invalid files.", func(t *testing.T) {
-		err := Copy(src, dstFilePath, 0, 0)
+		err := Copy(InvalidFilePath, tmpFile.Name(), 0, 0)
 		require.True(t, err.Error() == ErrUnsupportedFile.Error())
 	})
 }
@@ -100,20 +93,24 @@ func TestCopy(t *testing.T) {
 		{outputPath: "out_offset6000_limit1000.txt", offset: 6000, limit: 1000},
 	}
 
-	err := os.Mkdir(TestDataTempPath, 0o740)
-	if err != nil && !os.IsExist(err) {
-		require.Nil(t, err)
+	tmpDir, err := os.MkdirTemp("", "")
+	if err != nil {
+		t.Fatal(err)
 	}
+	defer os.RemoveAll(tmpDir)
 
 	for _, testCase := range testCases {
 		testCase := testCase
 
 		t.Run(fmt.Sprintf("Reference %s\n", testCase.outputPath), func(t *testing.T) {
-			dstFilePath := fmt.Sprintf("%s%s", TestDataTempPath, testCase.outputPath)
-			err := Copy(SourceFilePath, dstFilePath, testCase.offset, testCase.limit)
+			tmpFile, err := os.CreateTemp("", TempFilePrefix)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = Copy(SourceFilePath, tmpFile.Name(), testCase.offset, testCase.limit)
 			require.Nil(t, err)
 
-			dstFile, err := os.Open(dstFilePath)
+			dstFile, err := os.Open(tmpFile.Name())
 			require.Nil(t, err)
 
 			refFilePath := fmt.Sprintf("%s%s", TestDataPath, testCase.outputPath)
@@ -127,13 +124,9 @@ func TestCopy(t *testing.T) {
 			refFile.Close()
 			dstFile.Close()
 
-			err = os.Remove(dstFilePath)
-			assert.Nil(t, err)
+			os.Remove(tmpFile.Name())
 		})
 	}
-
-	err = os.Remove(TestDataTempPath)
-	assert.Nil(t, err)
 }
 
 func isEqualFiles(first, second os.File) (bool, error) {
@@ -182,4 +175,34 @@ func getFileSizeFromPath(filePath string) (int64, error) {
 		return 0, err
 	}
 	return fileInfo.Size(), nil
+}
+
+func initTempStorage(t *testing.T) (string, *os.File) {
+	t.Helper()
+
+	tmpDirPath, err := os.MkdirTemp("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tmpFile, err := os.CreateTemp("", TempFilePrefix)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return tmpDirPath, tmpFile
+}
+
+func cleanUpTempStorage(t *testing.T, dirPath string, tmpFile *os.File) {
+	t.Helper()
+
+	err := os.Remove(tmpFile.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = os.RemoveAll(dirPath)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
