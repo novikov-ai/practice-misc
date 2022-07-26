@@ -104,7 +104,7 @@ func validateFieldByIndex(index int, structValue reflect.Value, structType refle
 		return validationErr, false
 	}
 
-	vr, err := getValidationRules(tagValue)
+	validationRules, err := getValidationRules(tagValue)
 	if err != nil {
 		validationErr.Err = err
 		return validationErr, true
@@ -115,10 +115,10 @@ func validateFieldByIndex(index int, structValue reflect.Value, structType refle
 
 	switch assertedValue := fieldValue.(type) {
 	case int:
-		err = vr.checkFieldIntValue(assertedValue)
+		err = validationRules.checkFieldIntValue(assertedValue)
 	case []int:
 		for _, itemValue := range assertedValue {
-			err = vr.checkFieldIntValue(itemValue)
+			err = validationRules.checkFieldIntValue(itemValue)
 			if err != nil {
 				validationErr.Err = err
 				break
@@ -126,10 +126,10 @@ func validateFieldByIndex(index int, structValue reflect.Value, structType refle
 		}
 
 	case string:
-		err = vr.checkFieldStringValue(assertedValue)
+		err = validationRules.checkFieldStringValue(assertedValue)
 	case []string:
 		for _, itemValue := range assertedValue {
-			err = vr.checkFieldStringValue(itemValue)
+			err = validationRules.checkFieldStringValue(itemValue)
 			if err != nil {
 				validationErr.Err = err
 				break
@@ -137,7 +137,7 @@ func validateFieldByIndex(index int, structValue reflect.Value, structType refle
 		}
 
 	default:
-		err = vr.validateNested(fieldElement, structType.Field(index))
+		err = validationRules.validateNested(fieldElement, structType.Field(index))
 	}
 
 	validationErr.Err = err
