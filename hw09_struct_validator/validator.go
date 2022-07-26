@@ -21,9 +21,6 @@ const (
 	KeyValueSeparator = ":"
 )
 
-type ValidationRules struct {
-	rules []Rule
-}
 type Rule struct {
 	Name, Value string
 }
@@ -115,10 +112,10 @@ func validateFieldByIndex(index int, structValue reflect.Value, structType refle
 
 	switch assertedValue := fieldValue.(type) {
 	case int:
-		err = validationRules.checkFieldIntValue(assertedValue)
+		err = checkFieldIntValue(validationRules, assertedValue)
 	case []int:
 		for _, itemValue := range assertedValue {
-			err = validationRules.checkFieldIntValue(itemValue)
+			err = checkFieldIntValue(validationRules, itemValue)
 			if err != nil {
 				validationErr.Err = err
 				break
@@ -126,10 +123,10 @@ func validateFieldByIndex(index int, structValue reflect.Value, structType refle
 		}
 
 	case string:
-		err = validationRules.checkFieldStringValue(assertedValue)
+		err = checkFieldStringValue(validationRules, assertedValue)
 	case []string:
 		for _, itemValue := range assertedValue {
-			err = validationRules.checkFieldStringValue(itemValue)
+			err = checkFieldStringValue(validationRules, itemValue)
 			if err != nil {
 				validationErr.Err = err
 				break
@@ -137,7 +134,7 @@ func validateFieldByIndex(index int, structValue reflect.Value, structType refle
 		}
 
 	default:
-		err = validationRules.validateNested(fieldElement, structType.Field(index))
+		err = validateNested(validationRules, fieldElement, structType.Field(index))
 	}
 
 	validationErr.Err = err
@@ -145,35 +142,35 @@ func validateFieldByIndex(index int, structValue reflect.Value, structType refle
 	return validationErr, true
 }
 
-func (vr ValidationRules) validateNested(structElement reflect.Value, structField reflect.StructField) error {
+func validateNested(vr []Rule, structElement reflect.Value, structField reflect.StructField) error {
 	structValue := structElement.Interface()
 	structKind := structElement.Type().Kind()
 
 	if structKind == reflect.String {
-		return vr.checkFieldStringValue(fmt.Sprintf("%v", structValue))
+		return checkFieldStringValue(vr, fmt.Sprintf("%v", structValue))
 	} else if structKind == reflect.Int {
 		sValue := fmt.Sprintf("%v", structValue)
 		v, err := strconv.Atoi(sValue)
 		if err != nil {
 			return err
 		}
-		return vr.checkFieldIntValue(v)
+		return checkFieldIntValue(vr, v)
 	}
 
 	return Validate(structField)
 }
 
-func getValidationRules(tagValue string) (ValidationRules, error) {
-	vr := ValidationRules{rules: make([]Rule, 0)}
+func getValidationRules(tagValue string) ([]Rule, error) {
+	rules := make([]Rule, 0)
 	tags := strings.Split(tagValue, CombineTag)
 	for _, tag := range tags {
 		rule, err := getRuleFromTag(tag)
 		if err != nil {
-			return vr, err
+			return rules, err
 		}
-		vr.rules = append(vr.rules, rule)
+		rules = append(rules, rule)
 	}
-	return vr, nil
+	return rules, nil
 }
 
 func getRuleFromTag(tag string) (Rule, error) {
@@ -190,8 +187,8 @@ func getRuleFromTag(tag string) (Rule, error) {
 	return rule, nil
 }
 
-func (vr ValidationRules) checkFieldIntValue(value int) error {
-	for _, rule := range vr.rules {
+func checkFieldIntValue(rules []Rule, value int) error {
+	for _, rule := range rules {
 		ruleValueNumber, err := strconv.Atoi(rule.Value)
 		if err != nil && rule.Name != InTag {
 			return ErrInvalidFieldTag
@@ -217,8 +214,8 @@ func (vr ValidationRules) checkFieldIntValue(value int) error {
 	return nil
 }
 
-func (vr ValidationRules) checkFieldStringValue(value string) error {
-	for _, rule := range vr.rules {
+func checkFieldStringValue(rules []Rule, value string) error {
+	for _, rule := range rules {
 		switch rule.Name {
 		case LenTag:
 			ruleValueNumber, err := strconv.Atoi(rule.Value)

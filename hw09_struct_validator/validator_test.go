@@ -105,18 +105,7 @@ func TestValidate(t *testing.T) {
 			t.Parallel()
 
 			errors := Validate(tt.in)
-
-			validationErrs, ok := errors.(ValidationErrors)
-			if !ok {
-				require.Equal(t, tt.expectedErr, errors)
-			} else {
-				expectedValidationErrs, ok := tt.expectedErr.(ValidationErrors)
-				require.True(t, ok)
-
-				for i := 0; i < len(expectedValidationErrs); i++ {
-					require.ErrorIs(t, validationErrs[i].Err, expectedValidationErrs[i].Err)
-				}
-			}
+			require.Equal(t, tt.expectedErr, errors)
 		})
 	}
 }
