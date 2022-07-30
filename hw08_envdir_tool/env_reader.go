@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -27,13 +26,13 @@ func ReadDir(dir string) (Environment, error) {
 	}
 	defer dirFile.Close()
 
-	fi, err := ioutil.ReadDir(dir)
+	dirEntries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
 
 	env := Environment{}
-	for _, f := range fi {
+	for _, f := range dirEntries {
 		envFileName := f.Name()
 		if skipEnvFile(envFileName) {
 			continue
