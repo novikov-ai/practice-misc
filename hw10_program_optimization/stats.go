@@ -11,7 +11,7 @@ import (
 )
 
 type User struct {
-	ID       int `json:"Id"`
+	ID       int
 	Name     string
 	Username string
 	Email    string
@@ -56,10 +56,7 @@ func getUsers(r io.Reader) (result users, err error) {
 			return result, err
 		}
 
-		user, err := getUserFromParsedValue(v)
-		if err != nil {
-			return result, err
-		}
+		user := getUserFromParsedValue(v)
 
 		result[i] = *user
 		i++
@@ -68,7 +65,7 @@ func getUsers(r io.Reader) (result users, err error) {
 	return
 }
 
-func getUserFromParsedValue(value *fastjson.Value) (*User, error) {
+func getUserFromParsedValue(value *fastjson.Value) *User {
 	return &User{
 		ID:       value.GetInt(UserFieldId),
 		Name:     string(value.GetStringBytes(UserFieldName)),
@@ -77,7 +74,7 @@ func getUserFromParsedValue(value *fastjson.Value) (*User, error) {
 		Phone:    string(value.GetStringBytes(UserFieldPhone)),
 		Password: string(value.GetStringBytes(UserFieldPassword)),
 		Address:  string(value.GetStringBytes(UserFieldAddress)),
-	}, nil
+	}
 }
 
 func countDomains(u users, domain string) (DomainStat, error) {
