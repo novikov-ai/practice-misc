@@ -1,16 +1,16 @@
 package hw10programoptimization
 
 import (
-	"encoding/json"
+	"bufio"
 	"fmt"
+	"github.com/valyala/fastjson"
 	"io"
-	"io/ioutil"
 	"regexp"
 	"strings"
 )
 
 type User struct {
-	ID       int
+	ID       int `json:"Id"`
 	Name     string
 	Username string
 	Email    string
@@ -18,6 +18,16 @@ type User struct {
 	Password string
 	Address  string
 }
+
+const (
+	UserFieldId       = "Id"
+	UserFieldName     = "Name"
+	UserFieldUsername = "Username"
+	UserFieldEmail    = "Email"
+	UserFieldPhone    = "Phone"
+	UserFieldPassword = "Password"
+	UserFieldAddress  = "Address"
+)
 
 type DomainStat map[string]int
 
@@ -32,35 +42,56 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 type users [100_000]User
 
 func getUsers(r io.Reader) (result users, err error) {
-	content, err := ioutil.ReadAll(r)
-	if err != nil {
-		return
+	reader := bufio.NewScanner(r)
+
+	parser := fastjson.Parser{}
+	i := 0
+
+	for reader.Scan() {
+		content := reader.Bytes()
+
+		v, err := parser.ParseBytes(content)
+		if err != nil {
+			return result, err
+		}
+
+		user, err := getUserFromParsedValue(v)
+		if err != nil {
+			return result, err
+		}
+
+		result[i] = *user
+		i++
 	}
 
-	lines := strings.Split(string(content), "\n")
-	for i, line := range lines {
-		var user User
-		if err = json.Unmarshal([]byte(line), &user); err != nil {
-			return
-		}
-		result[i] = user
-	}
 	return
+}
+
+func getUserFromParsedValue(value *fastjson.Value) (*User, error) {
+	return &User{
+		ID:       value.GetInt(UserFieldId),
+		Name:     string(value.GetStringBytes(UserFieldName)),
+		Username: string(value.GetStringBytes(UserFieldUsername)),
+		Email:    string(value.GetStringBytes(UserFieldEmail)),
+		Phone:    string(value.GetStringBytes(UserFieldPhone)),
+		Password: string(value.GetStringBytes(UserFieldPassword)),
+		Address:  string(value.GetStringBytes(UserFieldAddress)),
+	}, nil
 }
 
 func countDomains(u users, domain string) (DomainStat, error) {
 	result := make(DomainStat)
 
-	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
-		if err != nil {
-			return nil, err
-		}
+	regExpr, err := regexp.Compile("\\." + domain)
+	if err != nil {
+		return nil, err
+	}
 
+	for _, user := range u {
+		matched := regExpr.MatchString(user.Email)
 		if matched {
-			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
-			num++
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
+			domainName := strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])
+			result[domainName]++
 		}
 	}
 	return result, nil
