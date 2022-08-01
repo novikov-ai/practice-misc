@@ -21,7 +21,7 @@ type User struct {
 }
 
 const (
-	UserFieldId       = "Id"
+	UserFieldID       = "Id"
 	UserFieldName     = "Name"
 	UserFieldUsername = "Username"
 	UserFieldEmail    = "Email"
@@ -67,7 +67,7 @@ func getUsers(r io.Reader) (result users, err error) {
 
 func getUserFromParsedValue(value *fastjson.Value) *User {
 	return &User{
-		ID:       value.GetInt(UserFieldId),
+		ID:       value.GetInt(UserFieldID),
 		Name:     string(value.GetStringBytes(UserFieldName)),
 		Username: string(value.GetStringBytes(UserFieldUsername)),
 		Email:    string(value.GetStringBytes(UserFieldEmail)),
