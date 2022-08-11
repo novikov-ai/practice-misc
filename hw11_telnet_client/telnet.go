@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
 	"io"
 	"net"
 	"time"
@@ -16,49 +14,29 @@ type TelnetClient interface {
 }
 
 type Client struct {
-	address    string
-	timeout    time.Duration
-	input      io.ReadCloser
-	output     io.Writer
-	connection net.Conn
+	timeout time.Duration
+	input   io.ReadCloser
+	output  io.Writer
+	conn    net.Conn
+	address string
 }
 
-func (cl *Client) Connect() error {
-	conn, err := net.DialTimeout("tcp", cl.address, cl.timeout)
-	if err != nil {
-		return err
-	}
-
-	cl.connection = conn
-
-	fmt.Printf("Welcome to %s!\n", cl.address)
-	return nil
+func (cl *Client) Connect() (err error) {
+	cl.conn, err = net.DialTimeout("tcp", cl.address, cl.timeout)
+	return err
 }
 
 func (cl *Client) Close() error {
-	return cl.connection.Close()
+	return cl.conn.Close()
 }
 
 func (cl *Client) Send() error {
-	r := bufio.NewReader(cl.input)
-	message, err := r.ReadString('\n')
-	if err != nil {
-		return err
-	}
-
-	_, err = cl.connection.Write([]byte(message))
+	_, err := io.Copy(cl.conn, cl.input)
 	return err
 }
 
 func (cl *Client) Receive() error {
-	r := bufio.NewReader(cl.connection)
-
-	message, err := r.ReadString('\n')
-	if err != nil {
-		return err
-	}
-
-	_, err = fmt.Fprintf(cl.output, message)
+	_, err := io.Copy(cl.output, cl.conn)
 	return err
 }
 
