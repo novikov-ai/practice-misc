@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"errors"
 	"io"
 	"net"
 	"time"
@@ -31,8 +33,24 @@ func (cl *Client) Close() error {
 }
 
 func (cl *Client) Send() error {
-	_, err := io.Copy(cl.conn, cl.input)
-	return err
+	dataSent := false
+	r := bufio.NewReader(cl.input)
+	for {
+		line, err := r.ReadString('\n')
+		if errors.Is(err, io.EOF) {
+			if !dataSent {
+				return io.EOF
+			}
+
+			break
+		}
+		_, err = cl.conn.Write([]byte(line))
+		if err != nil {
+			return err
+		}
+		dataSent = true
+	}
+	return nil
 }
 
 func (cl *Client) Receive() error {
