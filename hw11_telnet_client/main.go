@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -34,8 +35,9 @@ func main() {
 	tc := NewTelnetClient(hostPort, Timeout, os.Stdin, os.Stdout)
 	defer tc.Close()
 
-	err := tc.Connect()
-	if err != nil {
+	stderrLog(fmt.Sprintf("Connected to %s\n", hostPort))
+
+	if tc.Connect() != nil {
 		log.Fatal(ErrTimeout)
 	}
 
@@ -43,23 +45,18 @@ func main() {
 	defer stop()
 
 	go func() {
-		telnetClientDo(ctx, tc.Send)
+		clientDo(ctx, tc.Send)
 		stop()
 	}()
 	go func() {
-		telnetClientDo(ctx, tc.Receive)
-		stop()
+		clientDo(ctx, tc.Receive)
 	}()
 
-	select {
-	case <-ctx.Done():
-		fmt.Println()
-		stop()
-	}
+	<-ctx.Done()
 }
 
-func logError(r error) {
-	_, err := fmt.Fprintf(os.Stderr, "%s\n", r)
+func stderrLog(s string) {
+	_, err := fmt.Fprintf(os.Stderr, "%s\n", s)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -83,19 +80,38 @@ func getHostAddress() string {
 	return fmt.Sprintf("%s:%s", arguments[1], arguments[2])
 }
 
-func telnetClientDo(ctx context.Context, work func() error) {
+func clientDo(ctx context.Context, work func() error) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		default:
 			err := work()
-			if errors.Is(io.EOF, err) {
-				logError(err)
+			if errors.Is(io.EOF, err) || detectErrnoEpipe(err) {
+				stderrLog(err.Error())
 				return
 			} else if err != nil {
 				log.Fatal(err)
 			}
 		}
 	}
+}
+
+func detectErrnoEpipe(err error) bool {
+	r := errors.Unwrap(err)
+	if r == nil {
+		return false
+	}
+
+	r = errors.Unwrap(r)
+	if r == nil {
+		return false
+	}
+
+	rErrno, ok := r.(syscall.Errno)
+	if !ok {
+		return false
+	}
+
+	return rErrno == syscall.EPIPE
 }
