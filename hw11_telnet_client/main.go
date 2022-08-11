@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -19,8 +18,9 @@ const (
 )
 
 var (
-	Timeout    time.Duration
-	ErrTimeout = errors.New("timeout reached")
+	Timeout         time.Duration
+	ErrTimeout      = errors.New("timeout reached")
+	ErrWrongAddress = errors.New("incorrect host or port")
 )
 
 func init() {
@@ -30,7 +30,11 @@ func init() {
 func main() {
 	flag.Parse()
 
-	hostPort := getHostAddress()
+	hostPort, err := getHostAddress()
+	if err != nil {
+		fmt.Println("Please provide host and port")
+		return
+	}
 
 	tc := NewTelnetClient(hostPort, Timeout, os.Stdin, os.Stdout)
 	defer tc.Close()
@@ -38,7 +42,8 @@ func main() {
 	stderrLog(fmt.Sprintf("Connected to %s\n", hostPort))
 
 	if tc.Connect() != nil {
-		log.Fatal(ErrTimeout)
+		stderrLog(ErrTimeout.Error())
+		return
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -62,22 +67,20 @@ func stderrLog(s string) {
 	}
 }
 
-func getHostAddress() string {
+func getHostAddress() (string, error) {
 	arguments := os.Args
 	for i, arg := range arguments {
 		if strings.Contains(arg, FlagTimeout) {
-			left := arguments[0:i]
-			right := arguments[i+1:]
-			arguments = append(left, right...)
+			arguments = append(arguments[0:i], arguments[i+1:]...)
 			break
 		}
 	}
 
 	if len(arguments) < 3 {
-		log.Fatal("Please provide host and port")
+		return "", ErrWrongAddress
 	}
 
-	return fmt.Sprintf("%s:%s", arguments[1], arguments[2])
+	return fmt.Sprintf("%s:%s", arguments[1], arguments[2]), nil
 }
 
 func clientDo(ctx context.Context, work func() error) {
@@ -87,7 +90,7 @@ func clientDo(ctx context.Context, work func() error) {
 			return
 		default:
 			err := work()
-			if errors.Is(io.EOF, err) || detectErrnoEpipe(err) {
+			if errors.Is(io.EOF, err) {
 				stderrLog(err.Error())
 				return
 			} else if err != nil {
@@ -95,23 +98,4 @@ func clientDo(ctx context.Context, work func() error) {
 			}
 		}
 	}
-}
-
-func detectErrnoEpipe(err error) bool {
-	r := errors.Unwrap(err)
-	if r == nil {
-		return false
-	}
-
-	r = errors.Unwrap(r)
-	if r == nil {
-		return false
-	}
-
-	rErrno, ok := r.(syscall.Errno)
-	if !ok {
-		return false
-	}
-
-	return rErrno == syscall.EPIPE
 }
