@@ -37,14 +37,13 @@ func main() {
 	}
 
 	tc := NewTelnetClient(hostPort, Timeout, os.Stdin, os.Stdout)
-	defer tc.Close()
-
-	stderrLog(fmt.Sprintf("Connected to %s\n", hostPort))
-
 	if tc.Connect() != nil {
 		stderrLog(ErrTimeout.Error())
 		return
 	}
+	defer tc.Close()
+
+	stderrLog(fmt.Sprintf("Connected to %s\n", hostPort))
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
