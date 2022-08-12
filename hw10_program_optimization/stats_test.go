@@ -6,6 +6,7 @@ package hw10programoptimization
 import (
 	"archive/zip"
 	"bytes"
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -61,11 +62,19 @@ func TestGetDomainStat(t *testing.T) {
 }
 
 func BenchmarkGetDomainStat(b *testing.B) {
-	r, _ := zip.OpenReader("testdata/users.dat.zip")
+	b.StopTimer()
+
+	r, err := zip.OpenReader("testdata/users.dat.zip")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	defer r.Close()
 
 	data, _ := r.File[0].Open()
 	stats := make([]DomainStat, 0)
+
+	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
 		st, err := GetDomainStat(data, "biz")
