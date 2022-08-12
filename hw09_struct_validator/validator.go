@@ -150,19 +150,18 @@ func validateNested(vr []Rule, structElement reflect.Value, structField reflect.
 	structValue := structElement.Interface()
 	structKind := structElement.Type().Kind()
 
-	switch structKind {
-	case reflect.String:
+	if structKind == reflect.String {
 		return checkFieldStringValue(vr, fmt.Sprintf("%v", structValue))
-	case reflect.Int:
+	} else if structKind == reflect.Int {
 		sValue := fmt.Sprintf("%v", structValue)
 		v, err := strconv.Atoi(sValue)
 		if err != nil {
 			return err
 		}
 		return checkFieldIntValue(vr, v)
-	default:
-		return Validate(structField)
 	}
+
+	return Validate(structField)
 }
 
 func getValidationRules(tagValue string) ([]Rule, error) {
