@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
 
 	"github.com/valyala/fastjson"
@@ -20,15 +19,7 @@ type User struct {
 	Address  string
 }
 
-const (
-	UserFieldID       = "Id"
-	UserFieldName     = "Name"
-	UserFieldUsername = "Username"
-	UserFieldEmail    = "Email"
-	UserFieldPhone    = "Phone"
-	UserFieldPassword = "Password"
-	UserFieldAddress  = "Address"
-)
+const UserFieldEmail = "Email"
 
 type DomainStat map[string]int
 
@@ -56,38 +47,18 @@ func getUsers(r io.Reader) (result users, err error) {
 			return result, err
 		}
 
-		user := getUserFromParsedValue(v)
-
-		result[i] = *user
+		result[i] = User{Email: string(v.GetStringBytes(UserFieldEmail))}
 		i++
 	}
 
 	return
 }
 
-func getUserFromParsedValue(value *fastjson.Value) *User {
-	return &User{
-		ID:       value.GetInt(UserFieldID),
-		Name:     string(value.GetStringBytes(UserFieldName)),
-		Username: string(value.GetStringBytes(UserFieldUsername)),
-		Email:    string(value.GetStringBytes(UserFieldEmail)),
-		Phone:    string(value.GetStringBytes(UserFieldPhone)),
-		Password: string(value.GetStringBytes(UserFieldPassword)),
-		Address:  string(value.GetStringBytes(UserFieldAddress)),
-	}
-}
-
 func countDomains(u users, domain string) (DomainStat, error) {
 	result := make(DomainStat)
 
-	regExpr, err := regexp.Compile("\\." + domain)
-	if err != nil {
-		return nil, err
-	}
-
 	for _, user := range u {
-		matched := regExpr.MatchString(user.Email)
-		if matched {
+		if strings.HasSuffix(user.Email, "."+domain) {
 			domainName := strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])
 			result[domainName]++
 		}
