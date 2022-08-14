@@ -1,3 +1,8 @@
-module github.com/fixme_my_friend/hw12_13_14_15_calendar
+module github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar
 
 go 1.16
+
+require (
+	github.com/pelletier/go-toml v1.9.5
+	github.com/stretchr/testify v1.8.0
+)
