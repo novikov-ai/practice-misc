@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/configs"
 )
 
 type Logger struct {
@@ -28,14 +30,14 @@ const (
 	Error
 )
 
-func New(conf Config) *Logger {
-	level := strings.TrimSpace(strings.ToUpper(conf.Level))
+func New(conf configs.Config) *Logger {
+	level := strings.TrimSpace(strings.ToUpper(conf.Logger.Level))
 	lvl, ok := logLevels[level]
 	if !ok {
 		log.Fatal("incorrect logger level")
 	}
 
-	return &Logger{LogLevel: lvl, Writer: os.Stderr}
+	return &Logger{LogLevel: lvl, Writer: os.Stdout}
 }
 
 func (l Logger) log(head, message string) {

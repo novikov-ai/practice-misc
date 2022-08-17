@@ -2,9 +2,11 @@ package logger
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/configs"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLogger(t *testing.T) {
@@ -22,7 +24,10 @@ func TestLogger(t *testing.T) {
 		test := test
 
 		t.Run(fmt.Sprintf("Testing log-level: %s\n", test.logLevel), func(t *testing.T) {
-			logger := New(Config{Level: test.logLevel})
+			config := configs.Config{}
+			config.Logger.Level = test.logLevel
+
+			logger := New(config)
 
 			w := CustomWriter{}
 			logger.Writer = &w
@@ -69,6 +74,7 @@ type CustomWriter struct {
 func (w *CustomWriter) Write(p []byte) (n int, err error) {
 	return w.content.Write(p)
 }
+
 func (w *CustomWriter) Flush() string {
 	defer w.content.Reset()
 	return w.content.String()
