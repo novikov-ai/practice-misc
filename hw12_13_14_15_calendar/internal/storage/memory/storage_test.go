@@ -1,10 +1,13 @@
 package memorystorage
 
 import (
-	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
-	"github.com/stretchr/testify/require"
+	"errors"
 	"testing"
 	"time"
+
+	st "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage"
+	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -59,7 +62,8 @@ func TestStorageAdd(t *testing.T) {
 
 		t.Run(test.title, func(t *testing.T) {
 			for _, ev := range test.events {
-				storage.Add(ev)
+				err := storage.Add(ev)
+				require.Nil(t, err)
 			}
 		})
 	}
@@ -67,7 +71,8 @@ func TestStorageAdd(t *testing.T) {
 
 	t.Run("add already existing item", func(t *testing.T) {
 		for _, ev := range testCases[0].events {
-			storage.Add(ev)
+			err := storage.Add(ev)
+			require.True(t, errors.Is(err, st.ErrEventAlreadyExists))
 		}
 
 		require.Equal(t, 30, len(storage.events))
@@ -251,7 +256,10 @@ func generateEvents(quantity int) []m.Event {
 func initStorage(events []m.Event) *Storage {
 	storage := New()
 	for _, ev := range events {
-		storage.Add(ev)
+		err := storage.Add(ev)
+		if err != nil {
+			continue
+		}
 	}
 	return storage
 }
