@@ -3,21 +3,22 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/app"
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/configs"
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/memory"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "internal/configs/config-template.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "internal/configs/config_template.toml", "Path to configuration file")
 }
 
 func main() {
@@ -29,13 +30,12 @@ func main() {
 	}
 
 	config := configs.NewConfig(configFile)
-
-	logg := logger.New(config.Logger)
+	logg := logger.New(config)
 
 	storage := memorystorage.New()
 	calendar := app.New(logg, storage)
 
-	server := internalhttp.NewServer(logg, calendar)
+	server := internalhttp.NewServer(calendar, logg, config)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
