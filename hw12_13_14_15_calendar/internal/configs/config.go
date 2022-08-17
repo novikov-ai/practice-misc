@@ -1,27 +1,22 @@
 package configs
 
 import (
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/logger"
-	"github.com/pelletier/go-toml"
 	"log"
 	"os"
+
+	"github.com/pelletier/go-toml"
 )
 
 type Config struct {
-	Logger logger.Config
-
 	Application struct {
 		Name string `toml:"name"`
 	}
 
-	Server struct {
-		ServerHost string `toml:"host"`
-		ServerPort string `toml:"port"`
-	}
+	Logger LoggerConfig
+	Server ServerConfig
 
 	Database struct {
-		DbModeInMemory bool   `toml:"in_memory"`
-		DbConnection   string `toml:"connection"`
+		ModeInMemory bool `toml:"in_memory"`
 	}
 }
 
