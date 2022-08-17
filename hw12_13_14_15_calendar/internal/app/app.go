@@ -1,26 +1,41 @@
 package app
 
 import (
-	"context"
+	"time"
+
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/configs"
+	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 )
 
-type App struct { // TODO
+type App struct {
+	storage Storage
+	logger  Logger
+	config  configs.Config
 }
 
-type Logger interface { // TODO
+type Logger interface {
+	Debug(msg string)
+	Info(msg string)
+	Warn(msg string)
+	Error(msg string)
 }
 
-type Storage interface { // TODO
+type Storage interface {
+	Add(event m.Event) error
+	Update(eventId string, updatedEvent m.Event)
+	Delete(eventId string)
+	GetEventsForDay(day time.Time) []m.Event
+	GetEventsForWeek(day time.Time) []m.Event
+	GetEventsForMonth(day time.Time) []m.Event
 }
 
 func New(logger Logger, storage Storage) *App {
-	return &App{}
+	return &App{storage: storage, logger: logger}
 }
 
-func (a *App) CreateEvent(ctx context.Context, id, title string) error {
-	// TODO
-	return nil
-	// return a.storage.CreateEvent(storage.Event{ID: id, Title: title})
-}
+func (a *App) CreateEvent(title string) error {
+	newEvent := m.New()
+	newEvent.Title = title
 
-// TODO
+	return a.storage.Add(*newEvent)
+}
