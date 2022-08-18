@@ -18,7 +18,7 @@ func (m *Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	methodPathProto := fmt.Sprintf("%s %s %s", r.Method, r.RequestURI, r.Proto)
 
-	statusCode := 0
+	statusCode := 200
 	if r.Response != nil { // TODO: handle the status code correctly
 		statusCode = r.Response.StatusCode
 	}
