@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"time"
 
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/configs"
@@ -21,9 +22,11 @@ type Logger interface {
 }
 
 type Storage interface {
-	Add(event m.Event) error
-	Update(eventId string, updatedEvent m.Event)
-	Delete(eventId string)
+	Connect(ctx context.Context) error
+	Close(ctx context.Context) error
+	Add(event m.Event) (string, error)
+	Update(eventId string, updatedEvent m.Event) error
+	Delete(eventId string) error
 	GetEventsForDay(day time.Time) []m.Event
 	GetEventsForWeek(day time.Time) []m.Event
 	GetEventsForMonth(day time.Time) []m.Event
@@ -37,5 +40,6 @@ func (a *App) CreateEvent(title string) error {
 	newEvent := m.New()
 	newEvent.Title = title
 
-	return a.storage.Add(*newEvent)
+	_, err := a.storage.Add(*newEvent)
+	return err
 }
