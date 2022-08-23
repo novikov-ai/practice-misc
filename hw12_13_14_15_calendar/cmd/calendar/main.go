@@ -13,6 +13,7 @@ import (
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
 var configFile string
@@ -32,7 +33,13 @@ func main() {
 	config := configs.NewConfig(configFile)
 	logg := logger.New(config)
 
-	storage := memorystorage.New()
+	var storage app.Storage
+	if config.Database.InMemory {
+		storage = memorystorage.New()
+	} else {
+		storage = sqlstorage.New(config)
+	}
+
 	calendar := app.New(logg, storage)
 
 	server := internalhttp.NewServer(calendar, logg, config)
