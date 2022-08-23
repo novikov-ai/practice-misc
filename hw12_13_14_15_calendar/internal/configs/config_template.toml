@@ -10,4 +10,6 @@ host = "localhost"
 port = "8080"
 
 [database]
-in_memory = true
+in_memory = false
+driver = "postgres"
+source = "user=root password=secret dbname=root sslmode=disable"

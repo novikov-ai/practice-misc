@@ -16,7 +16,9 @@ type Config struct {
 	Server ServerConfig
 
 	Database struct {
-		ModeInMemory bool `toml:"in_memory"`
+		InMemory bool   `toml:"in_memory"`
+		Driver   string `toml:"driver"`
+		Source   string `toml:"source"`
 	}
 }
 
