@@ -1,10 +1,9 @@
 package configs
 
 import (
+	"github.com/BurntSushi/toml"
 	"log"
 	"os"
-
-	"github.com/pelletier/go-toml"
 )
 
 type Config struct {
