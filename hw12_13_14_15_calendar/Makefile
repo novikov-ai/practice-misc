@@ -31,4 +31,9 @@ install-lint-deps:
 lint: install-lint-deps
 	golangci-lint run ./...
 
+#TODO: implement
+#migrate:
+	#docker exec -it postgresDB psql -U root
+	#shell CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 .PHONY: build run build-img run-img version test lint

@@ -1,1 +1,16 @@
 version: "3"
+services:
+  db:
+    image: "postgres:latest"
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PW}
+      - DB_NAME=${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - 'pg_data:/var/lib/postgresql'
+      - ./migration/bin/init/init.sh:/docker-entrypoint-initdb.d/init.sh
+    restart: always
+
