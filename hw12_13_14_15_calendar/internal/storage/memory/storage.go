@@ -19,12 +19,12 @@ func New() *Storage {
 }
 
 func (st *Storage) Connect(ctx context.Context) error {
-	//dummy implementation for in-memory database
+	// dummy implementation for in-memory database
 	return clearStorage(ctx, st)
 }
 
 func (st *Storage) Close(ctx context.Context) error {
-	//dummy implementation for in-memory database
+	// dummy implementation for in-memory database
 	return clearStorage(ctx, st)
 }
 

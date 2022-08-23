@@ -3,11 +3,12 @@ package sqlstorage
 import (
 	"context"
 	"database/sql"
+	"time"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/configs"
 	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
-	"time"
 )
 
 type Storage struct {
