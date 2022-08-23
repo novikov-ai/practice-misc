@@ -1,6 +1,7 @@
 package memorystorage
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -17,26 +18,47 @@ func New() *Storage {
 	return &Storage{events: map[string]*m.Event{}}
 }
 
-func (st *Storage) Add(ev m.Event) error {
+func (st *Storage) Connect(ctx context.Context) error {
+	//dummy implementation for in-memory database
+	return clearStorage(ctx, st)
+}
+
+func (st *Storage) Close(ctx context.Context) error {
+	//dummy implementation for in-memory database
+	return clearStorage(ctx, st)
+}
+
+func clearStorage(ctx context.Context, st *Storage) error {
+	select {
+	default:
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+
+	st.events = map[string]*m.Event{}
+	return nil
+}
+
+func (st *Storage) Add(ev m.Event) (string, error) {
 	st.mu.Lock()
 	defer st.mu.Unlock()
 
 	_, ok := st.events[ev.ID]
 	if ok {
-		return storage.ErrEventAlreadyExists
+		return ev.ID, storage.ErrEventAlreadyExists
 	}
 
 	st.events[ev.ID] = &ev
-	return nil
+	return ev.ID, nil
 }
 
-func (st *Storage) Update(eventId string, updatedEvent m.Event) {
+func (st *Storage) Update(eventId string, updatedEvent m.Event) error {
 	st.mu.Lock()
 	defer st.mu.Unlock()
 
 	event, ok := st.events[eventId]
 	if !ok {
-		return
+		return storage.ErrEventNotExists
 	}
 
 	event.Duration = updatedEvent.Duration
@@ -45,13 +67,22 @@ func (st *Storage) Update(eventId string, updatedEvent m.Event) {
 	event.DateTime = updatedEvent.DateTime
 	event.NotifiedBefore = updatedEvent.NotifiedBefore
 	event.Title = updatedEvent.Title
+
+	return nil
 }
 
-func (st *Storage) Delete(eventId string) {
+func (st *Storage) Delete(eventId string) error {
 	st.mu.Lock()
 	defer st.mu.Unlock()
 
+	countBefore := len(st.events)
 	delete(st.events, eventId)
+
+	if len(st.events) >= countBefore {
+		return storage.ErrInMemoryOperationFailed
+	}
+
+	return nil
 }
 
 func (st *Storage) GetEventsForDay(day time.Time) []m.Event {

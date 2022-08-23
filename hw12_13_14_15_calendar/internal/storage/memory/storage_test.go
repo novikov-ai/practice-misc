@@ -62,7 +62,7 @@ func TestStorageAdd(t *testing.T) {
 
 		t.Run(test.title, func(t *testing.T) {
 			for _, ev := range test.events {
-				err := storage.Add(ev)
+				_, err := storage.Add(ev)
 				require.Nil(t, err)
 			}
 		})
@@ -71,7 +71,7 @@ func TestStorageAdd(t *testing.T) {
 
 	t.Run("add already existing item", func(t *testing.T) {
 		for _, ev := range testCases[0].events {
-			err := storage.Add(ev)
+			_, err := storage.Add(ev)
 			require.True(t, errors.Is(err, st.ErrEventAlreadyExists))
 		}
 
@@ -255,8 +255,9 @@ func generateEvents(quantity int) []m.Event {
 
 func initStorage(events []m.Event) *Storage {
 	storage := New()
+
 	for _, ev := range events {
-		err := storage.Add(ev)
+		_, err := storage.Add(ev)
 		if err != nil {
 			continue
 		}
