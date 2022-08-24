@@ -173,7 +173,7 @@ func TestStorageDelete(t *testing.T) {
 }
 
 func TestStorageGetEventsForDay(t *testing.T) {
-	storage := setUpStorage()
+	storage := initStorage(generateEvents(len(dates)))
 
 	testCase := []struct {
 		title  string
@@ -200,7 +200,7 @@ func TestStorageGetEventsForDay(t *testing.T) {
 }
 
 func TestStorageGetEventsForWeek(t *testing.T) {
-	storage := setUpStorage()
+	storage := initStorage(generateEvents(len(dates)))
 
 	testCase := []struct {
 		title  string
@@ -223,7 +223,7 @@ func TestStorageGetEventsForWeek(t *testing.T) {
 }
 
 func TestStorageGetEventsForMonth(t *testing.T) {
-	storage := setUpStorage()
+	storage := initStorage(generateEvents(len(dates)))
 
 	testCase := []struct {
 		title  string
@@ -247,8 +247,14 @@ func TestStorageGetEventsForMonth(t *testing.T) {
 
 func generateEvents(quantity int) []m.Event {
 	events := make([]m.Event, 0, quantity)
+
 	for i := 0; i < quantity; i++ {
-		events = append(events, *m.New())
+		newEvent := m.New()
+		if i < len(dates) {
+			newEvent.DateTime = dates[i]
+		}
+
+		events = append(events, *newEvent)
 	}
 	return events
 }
@@ -261,16 +267,6 @@ func initStorage(events []m.Event) *Storage {
 		if err != nil {
 			continue
 		}
-	}
-	return storage
-}
-
-func setUpStorage() *Storage {
-	storage := initStorage(generateEvents(len(dates)))
-	index := 0
-	for _, event := range storage.events {
-		event.DateTime = dates[index]
-		index++
 	}
 	return storage
 }
