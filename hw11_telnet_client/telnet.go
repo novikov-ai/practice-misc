@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"errors"
 	"io"
 	"net"
@@ -29,28 +28,16 @@ func (cl *Client) Connect() (err error) {
 }
 
 func (cl *Client) Close() error {
-	return cl.conn.Close()
+	if cl.conn != nil {
+		return cl.conn.Close()
+	}
+
+	return errors.New("connection is closed already")
 }
 
 func (cl *Client) Send() error {
-	dataSent := false
-	r := bufio.NewReader(cl.input)
-	for {
-		line, err := r.ReadString('\n')
-		if errors.Is(err, io.EOF) {
-			if !dataSent {
-				return io.EOF
-			}
-
-			break
-		}
-		_, err = cl.conn.Write([]byte(line))
-		if err != nil {
-			return err
-		}
-		dataSent = true
-	}
-	return nil
+	_, err := io.Copy(cl.conn, cl.input)
+	return err
 }
 
 func (cl *Client) Receive() error {
