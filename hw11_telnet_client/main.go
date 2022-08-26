@@ -49,7 +49,7 @@ func main() {
 	go func() {
 		err = tc.Send()
 		if err != nil {
-			fmt.Println("send error: ", err)
+			fmt.Fprintln(os.Stderr, "send error: ", err)
 		}
 
 		fmt.Fprintln(os.Stderr, "...EOF")
@@ -58,7 +58,7 @@ func main() {
 	go func() {
 		err = tc.Receive()
 		if err != nil {
-			fmt.Println("receive error:", err)
+			fmt.Fprintln(os.Stderr, "receive error: ", err)
 		}
 		fmt.Fprintln(os.Stderr, "...Connection was closed by peer")
 		stop()
