@@ -5,11 +5,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io"
-	"log"
 	"os"
 	"os/signal"
-	"strings"
+	"syscall"
 	"time"
 )
 
@@ -38,63 +36,43 @@ func main() {
 
 	tc := NewTelnetClient(hostPort, Timeout, os.Stdin, os.Stdout)
 	if tc.Connect() != nil {
-		stderrLog(ErrTimeout.Error())
+		fmt.Fprintln(os.Stderr, ErrTimeout.Error())
 		return
 	}
 	defer tc.Close()
 
-	stderrLog(fmt.Sprintf("Connected to %s\n", hostPort))
+	fmt.Fprintln(os.Stderr, "Connected to", hostPort)
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	go func() {
-		clientDo(ctx, tc.Send)
+		err = tc.Send()
+		if err != nil {
+			fmt.Println("send error: ", err)
+		}
+
+		fmt.Fprintln(os.Stderr, "...EOF")
 		stop()
 	}()
 	go func() {
-		clientDo(ctx, tc.Receive)
+		err = tc.Receive()
+		if err != nil {
+			fmt.Println("receive error:", err)
+		}
+		fmt.Fprintln(os.Stderr, "...Connection was closed by peer")
+		stop()
 	}()
 
 	<-ctx.Done()
 }
 
-func stderrLog(s string) {
-	_, err := fmt.Fprintf(os.Stderr, "%s\n", s)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func getHostAddress() (string, error) {
-	arguments := os.Args
-	for i, arg := range arguments {
-		if strings.Contains(arg, FlagTimeout) {
-			arguments = append(arguments[0:i], arguments[i+1:]...)
-			break
-		}
-	}
+	arguments := flag.Args()
 
-	if len(arguments) < 3 {
+	if len(arguments) < 2 {
 		return "", ErrWrongAddress
 	}
 
-	return fmt.Sprintf("%s:%s", arguments[1], arguments[2]), nil
-}
-
-func clientDo(ctx context.Context, work func() error) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			err := work()
-			if errors.Is(io.EOF, err) {
-				stderrLog(err.Error())
-				return
-			} else if err != nil {
-				log.Fatal(err)
-			}
-		}
-	}
+	return fmt.Sprintf("%s:%s", arguments[0], arguments[1]), nil
 }
