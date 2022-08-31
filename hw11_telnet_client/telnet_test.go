@@ -2,8 +2,10 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -62,4 +64,35 @@ func TestTelnetClient(t *testing.T) {
 
 		wg.Wait()
 	})
+}
+
+func TestTelnetClientAddress(t *testing.T) {
+	timeout, err := time.ParseDuration("5s")
+	require.NoError(t, err)
+
+	l, err := net.Listen("tcp", "127.0.0.1:")
+	require.NoError(t, err)
+	defer func() { require.NoError(t, l.Close()) }()
+
+	testCases := []struct {
+		address string
+		valid   bool
+	}{
+		{address: "127-0-0-1:", valid: false},
+		{address: l.Addr().String(), valid: true},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(fmt.Sprintf("valid address:%v", test.valid), func(t *testing.T) {
+			tc := NewTelnetClient(test.address, timeout, os.Stdin, os.Stdout)
+			err = tc.Connect()
+
+			if test.valid {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
 }
