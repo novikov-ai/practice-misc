@@ -6,6 +6,12 @@ ENV CODE_DIR /go/src/
 
 WORKDIR ${CODE_DIR}
 
+# БД (скрипт по автогенерации UUID)
+#COPY /internal/utils/db_init_scripts.sql /docker-entrypoint-initdb.d
+
+# Добавляем инструменты миграции
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
 # Кэшируем слои с модулями
 COPY go.mod .
 COPY go.sum .

@@ -3,10 +3,11 @@ package internalhttp
 import (
 	"context"
 	"fmt"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/app"
 )

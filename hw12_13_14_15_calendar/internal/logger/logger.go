@@ -2,11 +2,12 @@ package logger
 
 import (
 	"fmt"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 	"io"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 )
 
 type Logger struct {

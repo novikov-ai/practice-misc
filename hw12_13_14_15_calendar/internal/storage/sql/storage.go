@@ -3,8 +3,9 @@ package sqlstorage
 import (
 	"context"
 	"database/sql"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 	"time"
+
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"

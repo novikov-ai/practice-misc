@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/app"
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/logger"

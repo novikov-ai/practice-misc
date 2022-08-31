@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/utils"
+
 	st "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage"
 	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 	"github.com/stretchr/testify/require"
@@ -91,7 +93,7 @@ func TestStorageUpdate(t *testing.T) {
 		{title: "update existing item", events: generateEvents(10), correctUpdate: true},
 	}
 
-	updateEvent := m.New()
+	updateEvent := m.New(utils.GenerateUUID)
 	updateEvent.Title = "updating title"
 	updateEvent.Description = "simple description"
 	updateEvent.UserID = "5"
@@ -250,7 +252,7 @@ func generateEvents(quantity int) []m.Event {
 	events := make([]m.Event, 0, quantity)
 
 	for i := 0; i < quantity; i++ {
-		newEvent := m.New()
+		newEvent := m.New(utils.GenerateUUID)
 		if i < len(dates) {
 			newEvent.DateTime = dates[i]
 		}

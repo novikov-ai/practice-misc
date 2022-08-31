@@ -2,8 +2,9 @@ package app
 
 import (
 	"context"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 	"time"
+
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 
 	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 )
