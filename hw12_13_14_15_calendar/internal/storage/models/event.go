@@ -3,8 +3,6 @@ package models
 import (
 	"log"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Event struct {
@@ -17,11 +15,11 @@ type Event struct {
 	UserID         string
 }
 
-func New() *Event {
-	newUUID, err := uuid.NewUUID()
+func New(generateID func() (string, error)) *Event {
+	newID, err := generateID()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	return &Event{ID: newUUID.String()}
+	return &Event{ID: newID}
 }

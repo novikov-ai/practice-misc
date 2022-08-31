@@ -36,8 +36,8 @@ func New(logger Logger, storage Storage) *App {
 	return &App{storage: storage, logger: logger}
 }
 
-func (a *App) CreateEvent(ctx context.Context, title string) error {
-	newEvent := m.New()
+func (a *App) CreateEvent(ctx context.Context, title string, generatorID func() (string, error)) error {
+	newEvent := m.New(generatorID)
 	newEvent.Title = title
 
 	_, err := a.storage.Add(ctx, *newEvent)
