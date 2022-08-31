@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/pb"
+	pb "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/pb"
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -14,7 +14,8 @@ func convertToEvent(event *pb.Event) models.Event {
 		Description:    event.Description,
 		DateTime:       event.DateTime.AsTime(),
 		Duration:       event.Duration.AsDuration(),
-		NotifiedBefore: event.NotifiedBefore.AsDuration()}
+		NotifiedBefore: event.NotifiedBefore.AsDuration(),
+	}
 }
 
 func convertToPbEvent(event models.Event) *pb.Event {

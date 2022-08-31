@@ -3,8 +3,9 @@ package grpc
 import (
 	"context"
 	"fmt"
+
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/app"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/pb"
+	pb "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/pb"
 	"google.golang.org/grpc"
 )
 

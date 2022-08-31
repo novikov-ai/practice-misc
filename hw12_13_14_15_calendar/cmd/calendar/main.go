@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"flag"
-	pb "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/grpc"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	pb "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/grpc"
 
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 

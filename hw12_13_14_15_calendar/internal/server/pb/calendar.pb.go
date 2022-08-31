@@ -4,7 +4,7 @@
 // 	protoc        v3.19.4
 // source: api/calendar.proto
 
-package pb
+package __
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"

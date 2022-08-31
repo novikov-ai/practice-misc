@@ -3,14 +3,15 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"net"
+	"time"
+
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/app"
 	//"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/logger"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/pb"
+	pb "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/pb"
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 	"google.golang.org/grpc"
 	//"google.golang.org/grpc/grpclog"
-	"net"
-	"time"
 )
 
 var database app.Storage
@@ -54,7 +55,7 @@ func (s *Service) AddEvent(ctx context.Context, request *pb.AddEventRequest) (*p
 	case <-ctx.Done():
 		break
 	default:
-		createdID, err := database.Add(convertToEvent(request.Event))
+		createdID, err := database.Add(ctx, convertToEvent(request.Event))
 		return &pb.AddEventResponse{CreatedId: createdID}, err
 	}
 
@@ -66,7 +67,7 @@ func (s *Service) UpdateEvent(ctx context.Context, request *pb.UpdateEventReques
 	case <-ctx.Done():
 		break
 	default:
-		err := database.Update(request.EventId, convertToEvent(request.UpdatedEvent))
+		err := database.Update(ctx, request.EventId, convertToEvent(request.UpdatedEvent))
 		if err != nil {
 			return &pb.EventResponse{Status: pb.Status_STATUS_FAILED, Message: err.Error()}, err
 		}
@@ -80,7 +81,7 @@ func (s *Service) DeleteEvent(ctx context.Context, request *pb.DeleteEventReques
 	case <-ctx.Done():
 		break
 	default:
-		err := database.Delete(request.EventId)
+		err := database.Delete(ctx, request.EventId)
 		if err != nil {
 			return &pb.EventResponse{Status: pb.Status_STATUS_FAILED, Message: "event was not deleted"}, err
 		}
@@ -101,14 +102,14 @@ func (s *Service) GetEventsForMonth(ctx context.Context, request *pb.GetEventsRe
 	return getEvents(ctx, request, database.GetEventsForMonth)
 }
 
-func getEvents(ctx context.Context, request *pb.GetEventsRequest, action func(time time.Time) []models.Event) (*pb.GetEventsResponse, error) {
+func getEvents(ctx context.Context, request *pb.GetEventsRequest, action func(ctx context.Context, time time.Time) []models.Event) (*pb.GetEventsResponse, error) {
 	pbEvents := make([]*pb.Event, 0)
 
 	select {
 	case <-ctx.Done():
 		break
 	default:
-		events := action(request.FromDay.AsTime())
+		events := action(ctx, request.FromDay.AsTime())
 		for _, ev := range events {
 			pbEvents = append(pbEvents, convertToPbEvent(ev))
 		}
