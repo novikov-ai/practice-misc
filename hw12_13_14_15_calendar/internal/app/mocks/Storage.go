@@ -17,7 +17,7 @@ type Storage struct {
 
 // Add provides a mock function with given fields: ctx, event
 func (_m *Storage) Add(ctx context.Context, event models.Event) (string, error) {
-	ret := _m.Called(ctx, event)
+	ret := _m.Called(ctx, event) //nolint: typecheck
 
 	var r0 string
 	if rf, ok := ret.Get(0).(func(context.Context, models.Event) string); ok {
@@ -38,7 +38,7 @@ func (_m *Storage) Add(ctx context.Context, event models.Event) (string, error) 
 
 // Close provides a mock function with given fields: ctx
 func (_m *Storage) Close(ctx context.Context) error {
-	ret := _m.Called(ctx)
+	ret := _m.Called(ctx) //nolint: typecheck
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context) error); ok {
@@ -52,7 +52,7 @@ func (_m *Storage) Close(ctx context.Context) error {
 
 // Connect provides a mock function with given fields: ctx
 func (_m *Storage) Connect(ctx context.Context) error {
-	ret := _m.Called(ctx)
+	ret := _m.Called(ctx) //nolint: typecheck
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context) error); ok {
@@ -66,7 +66,7 @@ func (_m *Storage) Connect(ctx context.Context) error {
 
 // Delete provides a mock function with given fields: ctx, eventId
 func (_m *Storage) Delete(ctx context.Context, eventId string) error {
-	ret := _m.Called(ctx, eventId)
+	ret := _m.Called(ctx, eventId) //nolint: typecheck
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
@@ -80,7 +80,7 @@ func (_m *Storage) Delete(ctx context.Context, eventId string) error {
 
 // GetEventsForDay provides a mock function with given fields: ctx, day
 func (_m *Storage) GetEventsForDay(ctx context.Context, day time.Time) []models.Event {
-	ret := _m.Called(ctx, day)
+	ret := _m.Called(ctx, day) //nolint: typecheck
 
 	var r0 []models.Event
 	if rf, ok := ret.Get(0).(func(context.Context, time.Time) []models.Event); ok {
@@ -96,7 +96,7 @@ func (_m *Storage) GetEventsForDay(ctx context.Context, day time.Time) []models.
 
 // GetEventsForMonth provides a mock function with given fields: ctx, day
 func (_m *Storage) GetEventsForMonth(ctx context.Context, day time.Time) []models.Event {
-	ret := _m.Called(ctx, day)
+	ret := _m.Called(ctx, day) //nolint: typecheck
 
 	var r0 []models.Event
 	if rf, ok := ret.Get(0).(func(context.Context, time.Time) []models.Event); ok {
@@ -112,7 +112,7 @@ func (_m *Storage) GetEventsForMonth(ctx context.Context, day time.Time) []model
 
 // GetEventsForWeek provides a mock function with given fields: ctx, day
 func (_m *Storage) GetEventsForWeek(ctx context.Context, day time.Time) []models.Event {
-	ret := _m.Called(ctx, day)
+	ret := _m.Called(ctx, day) //nolint: typecheck
 
 	var r0 []models.Event
 	if rf, ok := ret.Get(0).(func(context.Context, time.Time) []models.Event); ok {
@@ -128,7 +128,7 @@ func (_m *Storage) GetEventsForWeek(ctx context.Context, day time.Time) []models
 
 // Update provides a mock function with given fields: ctx, eventId, updatedEvent
 func (_m *Storage) Update(ctx context.Context, eventId string, updatedEvent models.Event) error {
-	ret := _m.Called(ctx, eventId, updatedEvent)
+	ret := _m.Called(ctx, eventId, updatedEvent) //nolint: typecheck
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, models.Event) error); ok {
@@ -150,7 +150,7 @@ func NewStorage(t mockConstructorTestingTNewStorage) *Storage {
 	mock := &Storage{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() { mock.AssertExpectations(t) }) //nolint: typecheck
 
 	return mock
 }
