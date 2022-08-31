@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	pb "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/grpc"
 	"os"
 	"os/signal"
 	"syscall"
@@ -67,6 +68,13 @@ func main() {
 	}()
 
 	logg.Info("calendar is running...")
+
+	// starts protobuf server
+	go func() {
+		if err := pb.Start(ctx, storage, logg); err != nil {
+			logg.Error("failed to start protobuf server: " + err.Error())
+		}
+	}()
 
 	if err := server.Start(ctx); err != nil {
 		logg.Error("failed to start http server: " + err.Error())
