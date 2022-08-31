@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/app"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/configs"
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/memory"
@@ -19,7 +19,7 @@ import (
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "internal/configs/config_template.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "configs/config_template.toml", "Path to configuration file")
 }
 
 func main() {
@@ -40,13 +40,19 @@ func main() {
 		storage = sqlstorage.New(config)
 	}
 
-	calendar := app.New(logg, storage)
-
-	server := internalhttp.NewServer(calendar, logg, config)
-
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
+
+	err := storage.Connect(ctx)
+	if err != nil {
+		logg.Error(err.Error())
+		return
+	}
+
+	calendar := app.New(logg, storage)
+
+	server := internalhttp.NewServer(calendar, logg, config)
 
 	go func() {
 		<-ctx.Done()
