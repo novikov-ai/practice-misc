@@ -2,10 +2,10 @@ package logger
 
 import (
 	"fmt"
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 	"strings"
 	"testing"
 
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/configs"
 	"github.com/stretchr/testify/require"
 )
 
