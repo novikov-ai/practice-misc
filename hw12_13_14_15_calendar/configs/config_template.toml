@@ -1,0 +1,15 @@
+[logger]
+level = "debug"
+file = "log-file.txt"
+
+[application]
+name = "Calendar"
+
+[server]
+host = "localhost"
+port = "8080"
+
+[database]
+in_memory = false
+driver = "postgres"
+source = "user=root password=secret dbname=root sslmode=disable"
