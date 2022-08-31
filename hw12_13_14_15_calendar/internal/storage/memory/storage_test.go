@@ -1,6 +1,7 @@
 package memorystorage
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -62,7 +63,7 @@ func TestStorageAdd(t *testing.T) {
 
 		t.Run(test.title, func(t *testing.T) {
 			for _, ev := range test.events {
-				_, err := storage.Add(ev)
+				_, err := storage.Add(context.Background(), ev)
 				require.Nil(t, err)
 			}
 		})
@@ -71,7 +72,7 @@ func TestStorageAdd(t *testing.T) {
 
 	t.Run("add already existing item", func(t *testing.T) {
 		for _, ev := range testCases[0].events {
-			_, err := storage.Add(ev)
+			_, err := storage.Add(context.Background(), ev)
 			require.True(t, errors.Is(err, st.ErrEventAlreadyExists))
 		}
 
@@ -107,7 +108,7 @@ func TestStorageUpdate(t *testing.T) {
 			if test.correctUpdate {
 				updatingID := test.events[0].ID
 
-				storage.Update(updatingID, *updateEvent)
+				storage.Update(context.Background(), updatingID, *updateEvent)
 				require.Equal(t, len(test.events), len(storage.events))
 
 				ev, ok := storage.events[updatingID]
@@ -122,7 +123,7 @@ func TestStorageUpdate(t *testing.T) {
 				require.Equal(t, updateEvent.NotifiedBefore, ev.NotifiedBefore)
 
 			} else {
-				storage.Update(updateEvent.ID, *updateEvent)
+				storage.Update(context.Background(), updateEvent.ID, *updateEvent)
 				require.Equal(t, len(test.events), len(storage.events))
 
 				for _, ev := range test.events {
@@ -161,11 +162,11 @@ func TestStorageDelete(t *testing.T) {
 
 			if test.correctDelete {
 				for i := 0; i < test.removeItems; i++ {
-					storage.Delete(test.events[i].ID)
+					storage.Delete(context.Background(), test.events[i].ID)
 				}
 				require.Equal(t, len(test.events)-test.removeItems, len(storage.events))
 			} else {
-				storage.Delete("not existing UUID")
+				storage.Delete(context.Background(), "not existing UUID")
 				require.Equal(t, len(test.events), len(storage.events))
 			}
 		})
@@ -189,7 +190,7 @@ func TestStorageGetEventsForDay(t *testing.T) {
 		test := test
 
 		t.Run(test.title, func(t *testing.T) {
-			events := storage.GetEventsForDay(test.day)
+			events := storage.GetEventsForDay(context.Background(), test.day)
 			require.Equal(t, test.events, len(events))
 
 			for _, ev := range events {
@@ -216,7 +217,7 @@ func TestStorageGetEventsForWeek(t *testing.T) {
 		test := test
 
 		t.Run(test.title, func(t *testing.T) {
-			events := storage.GetEventsForWeek(test.week)
+			events := storage.GetEventsForWeek(context.Background(), test.week)
 			require.Equal(t, test.events, len(events))
 		})
 	}
@@ -239,7 +240,7 @@ func TestStorageGetEventsForMonth(t *testing.T) {
 		test := test
 
 		t.Run(test.title, func(t *testing.T) {
-			events := storage.GetEventsForMonth(test.week)
+			events := storage.GetEventsForMonth(context.Background(), test.week)
 			require.Equal(t, test.events, len(events))
 		})
 	}
@@ -263,7 +264,7 @@ func initStorage(events []m.Event) *Storage {
 	storage := New()
 
 	for _, ev := range events {
-		_, err := storage.Add(ev)
+		_, err := storage.Add(context.Background(), ev)
 		if err != nil {
 			continue
 		}

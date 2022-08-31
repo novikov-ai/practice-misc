@@ -39,103 +39,133 @@ func clearStorage(ctx context.Context, st *Storage) error {
 	return nil
 }
 
-func (st *Storage) Add(ev m.Event) (string, error) {
+func (st *Storage) Add(ctx context.Context, ev m.Event) (string, error) {
 	st.mu.Lock()
 	defer st.mu.Unlock()
 
-	_, ok := st.events[ev.ID]
-	if ok {
-		return ev.ID, storage.ErrEventAlreadyExists
+	select {
+	case <-ctx.Done():
+		break
+	default:
+		_, ok := st.events[ev.ID]
+		if ok {
+			return ev.ID, storage.ErrEventAlreadyExists
+		}
+
+		st.events[ev.ID] = &ev
 	}
 
-	st.events[ev.ID] = &ev
 	return ev.ID, nil
 }
 
-func (st *Storage) Update(eventId string, updatedEvent m.Event) error {
+func (st *Storage) Update(ctx context.Context, eventId string, updatedEvent m.Event) error {
 	st.mu.Lock()
 	defer st.mu.Unlock()
 
-	event, ok := st.events[eventId]
-	if !ok {
-		return storage.ErrEventNotExists
-	}
+	select {
+	case <-ctx.Done():
+		break
+	default:
+		event, ok := st.events[eventId]
+		if !ok {
+			return storage.ErrEventNotExists
+		}
 
-	event.Duration = updatedEvent.Duration
-	event.UserID = updatedEvent.UserID
-	event.Description = updatedEvent.Description
-	event.DateTime = updatedEvent.DateTime
-	event.NotifiedBefore = updatedEvent.NotifiedBefore
-	event.Title = updatedEvent.Title
-
-	return nil
-}
-
-func (st *Storage) Delete(eventId string) error {
-	st.mu.Lock()
-	defer st.mu.Unlock()
-
-	countBefore := len(st.events)
-	delete(st.events, eventId)
-
-	if len(st.events) >= countBefore {
-		return storage.ErrInMemoryOperationFailed
+		event.Duration = updatedEvent.Duration
+		event.UserID = updatedEvent.UserID
+		event.Description = updatedEvent.Description
+		event.DateTime = updatedEvent.DateTime
+		event.NotifiedBefore = updatedEvent.NotifiedBefore
+		event.Title = updatedEvent.Title
 	}
 
 	return nil
 }
 
-func (st *Storage) GetEventsForDay(day time.Time) []m.Event {
+func (st *Storage) Delete(ctx context.Context, eventId string) error {
+	st.mu.Lock()
+	defer st.mu.Unlock()
+
+	select {
+	case <-ctx.Done():
+		break
+	default:
+		countBefore := len(st.events)
+		delete(st.events, eventId)
+
+		if len(st.events) >= countBefore {
+			return storage.ErrInMemoryOperationFailed
+		}
+	}
+
+	return nil
+}
+
+func (st *Storage) GetEventsForDay(ctx context.Context, day time.Time) []m.Event {
 	st.mu.RLock()
 	defer st.mu.RUnlock()
 
 	eventsForDay := make([]m.Event, 0)
-	for _, event := range st.events {
-		eventDay := event.DateTime
+	select {
+	case <-ctx.Done():
+		break
+	default:
+		for _, event := range st.events {
+			eventDay := event.DateTime
 
-		if sameYearDay(day, eventDay) {
-			eventsForDay = append(eventsForDay, *event)
+			if sameYearDay(day, eventDay) {
+				eventsForDay = append(eventsForDay, *event)
+			}
 		}
 	}
 
 	return eventsForDay
 }
 
-func (st *Storage) GetEventsForWeek(fromDay time.Time) []m.Event {
+func (st *Storage) GetEventsForWeek(ctx context.Context, fromDay time.Time) []m.Event {
 	st.mu.RLock()
 	defer st.mu.RUnlock()
 
 	eventsForWeek := make([]m.Event, 0)
-	for _, event := range st.events {
-		eventDay := event.DateTime
+	select {
+	case <-ctx.Done():
+		break
+	default:
+		for _, event := range st.events {
+			eventDay := event.DateTime
 
-		if !sameYearMonth(fromDay, eventDay) || !sameWeek(fromDay, eventDay) {
-			continue
+			if !sameYearMonth(fromDay, eventDay) || !sameWeek(fromDay, eventDay) {
+				continue
+			}
+
+			if sameDayOrAfter(eventDay, fromDay) {
+				eventsForWeek = append(eventsForWeek, *event)
+			}
 		}
-
-		if sameDayOrAfter(eventDay, fromDay) {
-			eventsForWeek = append(eventsForWeek, *event)
-		}
-
 	}
 
 	return eventsForWeek
 }
 
-func (st *Storage) GetEventsForMonth(fromDay time.Time) []m.Event {
+func (st *Storage) GetEventsForMonth(ctx context.Context, fromDay time.Time) []m.Event {
 	st.mu.RLock()
 	defer st.mu.RUnlock()
 
 	eventsForMonth := make([]m.Event, 0)
-	for _, event := range st.events {
-		eventDay := event.DateTime
+	select {
+	case <-ctx.Done():
+		break
+	default:
+		for _, event := range st.events {
+			eventDay := event.DateTime
 
-		if !sameYearMonth(fromDay, eventDay) {
-			continue
-		}
+			if !sameYearMonth(fromDay, eventDay) {
+				continue
+			}
 
-		if sameDayOrAfter(eventDay, fromDay) {
-			eventsForMonth = append(eventsForMonth, *event)
+			if sameDayOrAfter(eventDay, fromDay) {
+				eventsForMonth = append(eventsForMonth, *event)
+			}
 		}
 	}
 

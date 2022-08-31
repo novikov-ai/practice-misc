@@ -3,11 +3,11 @@ package sqlstorage
 import (
 	"context"
 	"database/sql"
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/configs"
 	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 )
 
@@ -45,12 +45,12 @@ func (s *Storage) Close(ctx context.Context) error {
 	return s.conn.Close()
 }
 
-func (s *Storage) Add(ev m.Event) (string, error) {
+func (s *Storage) Add(ctx context.Context, ev m.Event) (string, error) {
 	query := `INSERT INTO events (title, description, user_id, date, duration, notified_before)
 VALUES ($1, $2, $3, $4, $5, $6)
 	RETURNING id`
 
-	row := s.db.QueryRow(query, ev.Title, ev.Description, ev.UserID, ev.DateTime, ev.Duration, ev.NotifiedBefore)
+	row := s.db.QueryRowxContext(ctx, query, ev.Title, ev.Description, ev.UserID, ev.DateTime, ev.Duration, ev.NotifiedBefore)
 
 	var id string
 
@@ -62,50 +62,50 @@ VALUES ($1, $2, $3, $4, $5, $6)
 	return id, nil
 }
 
-func (s *Storage) Update(eventID string, updatedEvent m.Event) error {
+func (s *Storage) Update(ctx context.Context, eventID string, updatedEvent m.Event) error {
 	query := `UPDATE events SET title = $1, 
                   description = $2, user_id = $3, date=$4, duration=$5, notified_before=$6
 	WHERE id = $7`
 
-	_, err := s.db.Exec(query, updatedEvent.Title, updatedEvent.Description, updatedEvent.UserID,
+	_, err := s.db.ExecContext(ctx, query, updatedEvent.Title, updatedEvent.Description, updatedEvent.UserID,
 		updatedEvent.DateTime, updatedEvent.Duration, updatedEvent.NotifiedBefore, eventID)
 
 	return err
 }
 
-func (s *Storage) Delete(eventID string) error {
+func (s *Storage) Delete(ctx context.Context, eventID string) error {
 	query := `DELETE FROM events
 WHERE id = $1`
 
-	_, err := s.db.Exec(query, eventID)
+	_, err := s.db.ExecContext(ctx, query, eventID)
 	return err
 }
 
-func (s *Storage) GetEventsForDay(day time.Time) []m.Event {
+func (s *Storage) GetEventsForDay(ctx context.Context, day time.Time) []m.Event {
 	query := `SELECT * FROM events
 WHERE DATE_PART('day', date) = $1`
 
-	return s.getEventsByQueryAndArgs(query, day.YearDay())
+	return s.getEventsByQueryAndArgs(ctx, query, day.YearDay())
 }
 
-func (s *Storage) GetEventsForWeek(fromDay time.Time) []m.Event {
+func (s *Storage) GetEventsForWeek(ctx context.Context, fromDay time.Time) []m.Event {
 	query := `SELECT * FROM events
 WHERE DATE_PART('year', date) = $1 AND DATE_PART('month', date) = $2 AND date >= $3 AND DATE_PART('week', date) = $4`
 
 	_, week := fromDay.ISOWeek()
-	return s.getEventsByQueryAndArgs(query, fromDay.Year(), fromDay.Month(), fromDay, week)
+	return s.getEventsByQueryAndArgs(ctx, query, fromDay.Year(), fromDay.Month(), fromDay, week)
 }
 
-func (s *Storage) GetEventsForMonth(fromDay time.Time) []m.Event {
+func (s *Storage) GetEventsForMonth(ctx context.Context, fromDay time.Time) []m.Event {
 	query := `SELECT * FROM events
 WHERE DATE_PART('year', date) = $1 AND DATE_PART('month', date) = $2 AND date >= $3`
 
-	return s.getEventsByQueryAndArgs(query, fromDay.Year(), fromDay.Month(), fromDay)
+	return s.getEventsByQueryAndArgs(ctx, query, fromDay.Year(), fromDay.Month(), fromDay)
 }
 
-func (s *Storage) getEventsByQueryAndArgs(query string, args ...interface{}) []m.Event {
+func (s *Storage) getEventsByQueryAndArgs(ctx context.Context, query string, args ...interface{}) []m.Event {
 	eventsForDay := make([]m.Event, 0)
-	rows, err := s.db.Query(query, args...)
+	rows, err := s.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return eventsForDay
 	}
