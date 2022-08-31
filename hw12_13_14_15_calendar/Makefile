@@ -34,14 +34,9 @@ lint: install-lint-deps
 migrate:
 	goose -dir "migrations/" postgres "user=root password=secret dbname=root sslmode=disable" up
 
-#TODO: implement
 generate:
 	rm -rf internal/server/pb
 	mkdir -p internal/server/pb
-
 	protoc api/calendar.proto --go_out=internal/server/pb --go-grpc_out=internal/server/pb
-
-	#go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	#go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 .PHONY: build run build-img run-img version test lint
