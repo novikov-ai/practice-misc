@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"flag"
-	pb "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/grpc"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	pb "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/grpc"
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/grpc"
 
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 
@@ -56,7 +55,7 @@ func main() {
 
 	calendar := app.New(logg, storage)
 
-	server := internalhttp.NewServer(calendar, logg, config)
+	server := internalhttp.NewServer(calendar, storage, logg, config)
 
 	go func() {
 		<-ctx.Done()
@@ -71,9 +70,8 @@ func main() {
 
 	logg.Info("calendar is running...")
 
-	// starts protobuf server
 	go func() {
-		if err := pb.Start(ctx, storage, logg); err != nil {
+		if err := grpc.Start(ctx, storage, logg, config); err != nil {
 			logg.Error("failed to start protobuf server: " + err.Error())
 		}
 	}()

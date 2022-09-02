@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/app"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 	"net/http"
 	"time"
+
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/app"
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 )
 
 type ServiceAPI struct {
