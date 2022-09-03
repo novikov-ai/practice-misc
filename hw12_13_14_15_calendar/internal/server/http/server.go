@@ -31,7 +31,7 @@ func (s *Server) Start(ctx context.Context) error {
 	serverError := make(chan error)
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", handlerWelcome)
+	mux.HandleFunc("/welcome", handlerWelcome)
 
 	serviceAPI := NewService(ctx, s.storage, s.logger)
 
