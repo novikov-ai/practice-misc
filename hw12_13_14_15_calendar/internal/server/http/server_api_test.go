@@ -38,7 +38,7 @@ var (
 	storage app.Storage
 
 	eventToAdd      = models.Event{ID: eventID, Title: "Mocked event"}
-	eventToUpdate   = models.Event{ID: eventID, Title: "Brand new title", Description: "Updated description"}
+	eventToUpdate   = models.Event{ID: "1", Title: "Brand new title", Description: "Updated description"}
 	eventID         = "123456789"
 	eventToDeleteID = "3"
 
@@ -125,7 +125,7 @@ func TestHandlerUpdate(t *testing.T) {
 	path := Host + config.Server.Port + PathHandlerUpdate
 	req := createRequestPOST(t, path, eventToUpdate)
 
-	setUpQueryParam(req, QueryParamID, eventID)
+	setUpQueryParam(req, QueryParamID, eventToUpdate.ID)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -135,7 +135,7 @@ func TestHandlerUpdate(t *testing.T) {
 
 	bodyResp := getBodyFromResponse(t, resp.Body)
 
-	require.Equal(t, fmt.Sprintf("Event with ID: %s was updated.", eventID), bodyResp)
+	require.Equal(t, fmt.Sprintf("Event with ID: %s was updated.", eventToUpdate.ID), bodyResp)
 }
 
 func TestHandlerDelete(t *testing.T) {
