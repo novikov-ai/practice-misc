@@ -18,15 +18,10 @@ func (m *Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	methodPathProto := fmt.Sprintf("%s %s %s", r.Method, r.RequestURI, r.Proto)
 
-	statusCode := 200
-	if r.Response != nil { // TODO: handle the status code correctly
-		statusCode = r.Response.StatusCode
-	}
-
 	latency := 0 // TODO: count request.timeNow - response.timeNow
 
 	m.logger.Info(fmt.Sprintf("%s [%s] %s %v %v \"%s\"", r.RemoteAddr, time.Now(), methodPathProto,
-		statusCode, latency, r.UserAgent()))
+		http.StatusOK, latency, r.UserAgent()))
 }
 
 func NewMiddleware(handler http.Handler, logger app.Logger) *Middleware {
