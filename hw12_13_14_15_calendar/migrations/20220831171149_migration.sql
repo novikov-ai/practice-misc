@@ -11,14 +11,6 @@ CREATE TABLE IF NOT EXISTS events (
                         PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS notifications (
-                               id UUID DEFAULT uuid_generate_v4 (),
-                               title VARCHAR(50),
-                               user_id VARCHAR,
-                               date DATE,
-                               PRIMARY KEY (id)
-);
-
 CREATE TABLE IF NOT EXISTS users (
                        id UUID DEFAULT uuid_generate_v4 (),
                        PRIMARY KEY (id)
@@ -29,6 +21,5 @@ CREATE TABLE IF NOT EXISTS users (
 -- +goose Down
 -- +goose StatementBegin
 DROP TABLE IF EXISTS events;
-DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS users;
 -- +goose StatementEnd
