@@ -2,6 +2,8 @@ package ampq
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/logger"
@@ -9,18 +11,19 @@ import (
 )
 
 type RabbitClient struct {
-	config  configs.ConfigScheduler
+	config  configs.AMPQ
 	conn    *ampq.Connection
 	channel *ampq.Channel
 	logger  *logger.Logger
 }
 
-func New(conf configs.ConfigScheduler, log *logger.Logger) *RabbitClient {
+func New(conf configs.AMPQ, log *logger.Logger) *RabbitClient {
 	return &RabbitClient{config: conf, logger: log}
 }
 
 func (rb *RabbitClient) Connect() error {
-	conn, err := ampq.Dial(rb.config.AMQP.Host + ":" + rb.config.AMQP.Port)
+	configAMPQ := rb.config.GetAMPQConfig()
+	conn, err := ampq.Dial(configAMPQ.Host + ":" + configAMPQ.Port)
 	if err != nil {
 		return err
 	}
@@ -56,7 +59,7 @@ func (rb *RabbitClient) Send(ctx context.Context, message string) error {
 	}
 
 	err = rb.channel.PublishWithContext(ctx, "", queue.Name, false, false,
-		ampq.Publishing{ContentType: rb.config.AMQP.ContentType, Body: []byte(message)})
+		ampq.Publishing{ContentType: rb.config.GetAMPQConfig().ContentType, Body: []byte(message)})
 	if err != nil {
 		return err
 	}
@@ -65,7 +68,7 @@ func (rb *RabbitClient) Send(ctx context.Context, message string) error {
 	return nil
 }
 
-func (rb *RabbitClient) Receive(ctx context.Context) error {
+func (rb *RabbitClient) Receive(ctx context.Context, dst *os.File) error {
 	queue, err := rb.ConfigureQueue()
 	if err != nil {
 		return err
@@ -77,19 +80,32 @@ func (rb *RabbitClient) Receive(ctx context.Context) error {
 		return err
 	}
 
+	errs := make(chan error, 1)
+
 	go func() {
 		for m := range messages {
-			rb.logger.Info("Received: " + string(m.Body))
+			// rb.logger.Info("Received: " + string(m.Body))
+			_, err = fmt.Fprintf(dst, "Sent notification: %s\n", m.Body)
+			if err != nil {
+				errs <- err
+				return
+			}
 		}
 	}()
 
-	rb.logger.Info("[*] Waiting for new messages...")
+	// rb.logger.Info("[*] Waiting for new messages...")
 
-	<-ctx.Done()
+	select {
+	case <-ctx.Done():
+		break
+	case err = <-errs:
+		return err
+	}
+
 	return nil
 }
 
 func (rb *RabbitClient) ConfigureQueue() (ampq.Queue, error) {
 	return rb.channel.QueueDeclare(
-		rb.config.AMQP.QueueName, false, false, false, false, nil)
+		rb.config.GetAMPQConfig().QueueName, false, false, false, false, nil)
 }

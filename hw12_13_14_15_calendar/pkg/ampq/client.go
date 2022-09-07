@@ -1,10 +1,13 @@
 package ampq
 
-import "context"
+import (
+	"context"
+	"os"
+)
 
 type Client interface {
 	Connect() error
 	Close() error
 	Send(ctx context.Context, message string) error
-	Receive(ctx context.Context) error
+	Receive(ctx context.Context, dst *os.File) error
 }
