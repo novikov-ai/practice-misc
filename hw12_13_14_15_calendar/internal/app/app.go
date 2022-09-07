@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
+	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/models"
 
-	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 )
 
 type App struct {
@@ -25,12 +26,15 @@ type Logger interface {
 type Storage interface {
 	Connect(ctx context.Context) error
 	Close(ctx context.Context) error
+
 	Add(ctx context.Context, event m.Event) (string, error)
 	Update(ctx context.Context, eventId string, updatedEvent m.Event) error
 	Delete(ctx context.Context, eventId string) error
 	GetEventsForDay(ctx context.Context, day time.Time) []m.Event
 	GetEventsForWeek(ctx context.Context, day time.Time) []m.Event
 	GetEventsForMonth(ctx context.Context, day time.Time) []m.Event
+
+	RunQuery(ctx context.Context, query string) (*sql.Rows, error)
 }
 
 func New(logger Logger, storage Storage) *App {

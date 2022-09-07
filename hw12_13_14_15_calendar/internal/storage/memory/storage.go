@@ -2,11 +2,14 @@ package memorystorage
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"sync"
 	"time"
 
+	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/models"
+
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage"
-	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 )
 
 type Storage struct {
@@ -188,4 +191,8 @@ func sameWeek(d1, d2 time.Time) bool {
 
 func sameDayOrAfter(day, pastDay time.Time) bool {
 	return day.Equal(pastDay) || day.After(pastDay)
+}
+
+func (st *Storage) RunQuery(ctx context.Context, query string) (*sql.Rows, error) {
+	return &sql.Rows{}, errors.New("not available for in-memory usage")
 }
