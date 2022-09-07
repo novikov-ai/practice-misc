@@ -1,5 +1,11 @@
 [application]
 name = "Sender"
 
+[logger]
+level = "debug"
+
 [amqp]
 host = "amqp://guest:guest@localhost"
+port = "5672"
+queue_name = "notifications"
+content_type = "application/json"

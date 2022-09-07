@@ -11,19 +11,17 @@ import (
 
 type ConfigSender struct {
 	Application groups.Application
+	Logger      groups.Logger
+	AMPQ        groups.AMQP
 }
 
-//func (conf *ConfigScheduler) GetLoggerConfig() groups.Logger {
-//	return conf.Logger
-//}
-//
-//func (conf *ConfigScheduler) GetDatabaseConfig() groups.Database {
-//	return conf.Database
-//}
-//
-//func (conf *ConfigScheduler) GetServerConfig() groups.Server {
-//	return conf.Server
-//}
+func (conf *ConfigSender) GetLoggerConfig() groups.Logger {
+	return conf.Logger
+}
+
+func (conf *ConfigSender) GetAMPQConfig() groups.AMQP {
+	return conf.AMPQ
+}
 
 func NewConfigSender(path string) ConfigSender {
 	configRaw, err := os.ReadFile(path)

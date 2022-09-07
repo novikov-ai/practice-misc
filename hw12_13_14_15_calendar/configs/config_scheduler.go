@@ -30,6 +30,10 @@ func (conf *ConfigScheduler) GetServerConfig() groups.Server {
 	return conf.Server
 }
 
+func (conf *ConfigScheduler) GetAMPQConfig() groups.AMQP {
+	return conf.AMQP
+}
+
 func NewConfigScheduler(path string) ConfigScheduler {
 	configRaw, err := os.ReadFile(path)
 	if err != nil {
