@@ -24,7 +24,7 @@ type Scheduler struct {
 
 const (
 	QuerySelectEventIDsToNotify = `SELECT * FROM events
-	//WHERE NOW() = (date - notified_before)`
+WHERE NOW() = (date - notified_before)`
 
 	QueryDeleteOldEvents = `DELETE FROM events
 WHERE EXTRACT(YEAR FROM NOW()) - (EXTRACT(YEAR FROM date)) > 1`

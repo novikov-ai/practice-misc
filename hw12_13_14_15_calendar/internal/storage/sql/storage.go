@@ -20,7 +20,6 @@ type Storage struct {
 }
 
 func New(config configs.Configurator) *Storage {
-	// TODO: env
 	databaseConfig := config.GetDatabaseConfig()
 	return &Storage{driver: databaseConfig.Driver, source: databaseConfig.Source}
 }

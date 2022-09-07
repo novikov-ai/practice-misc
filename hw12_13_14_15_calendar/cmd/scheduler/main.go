@@ -44,7 +44,7 @@ func main() {
 		return
 	}
 
-	messageBroker := ampq.New(config, logger)
+	messageBroker := ampq.New(&config, logger)
 	err = messageBroker.Connect()
 	if err != nil {
 		exitWithError(logger, err)

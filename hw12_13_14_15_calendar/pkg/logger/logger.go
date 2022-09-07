@@ -31,7 +31,7 @@ const (
 	Error
 )
 
-func New(conf configs.Configurator) *Logger {
+func New(conf configs.Logger) *Logger {
 	level := strings.TrimSpace(strings.ToUpper(conf.GetLoggerConfig().Level))
 	lvl, ok := logLevels[level]
 	if !ok {
