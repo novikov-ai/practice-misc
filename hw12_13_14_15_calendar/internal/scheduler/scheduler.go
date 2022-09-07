@@ -53,7 +53,6 @@ func (sch *Scheduler) Scan(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			sch.logger.Info(schedulerLog("finished by cancellation"))
 			return nil
 
 		case err := <-errors:
@@ -144,7 +143,7 @@ func deleteOldEvents(ctx context.Context, sch *Scheduler) error {
 	}
 	defer rows.Close()
 
-	sch.logger.Info("Cleaned up old events")
+	sch.logger.Info("cleaned up old events")
 
 	return nil
 }

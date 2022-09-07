@@ -12,7 +12,6 @@ import (
 	sqlstorage "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/sql"
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/ampq"
 	log "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/logger"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/utils"
 )
 
 var configFile string
@@ -23,11 +22,6 @@ func init() {
 
 func main() {
 	flag.Parse()
-
-	if flag.Arg(0) == "version" {
-		utils.PrintVersion()
-		return
-	}
 
 	config := configs.NewConfigScheduler(configFile)
 
@@ -54,6 +48,8 @@ func main() {
 	scheduler := sch.New(storage, logger, config, messageBroker)
 
 	errs := make(chan error, 1)
+
+	logger.Info("scheduler is running...")
 
 	go func() {
 		errs <- scheduler.Scan(ctx)

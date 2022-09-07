@@ -12,15 +12,15 @@ import (
 type ConfigSender struct {
 	Application groups.Application
 	Logger      groups.Logger
-	AMPQ        groups.AMQP
+	AMQP        groups.AMQP
 }
 
 func (conf *ConfigSender) GetLoggerConfig() groups.Logger {
 	return conf.Logger
 }
 
-func (conf *ConfigSender) GetAMPQConfig() groups.AMQP {
-	return conf.AMPQ
+func (conf *ConfigSender) GetAMQPConfig() groups.AMQP {
+	return conf.AMQP
 }
 
 func NewConfigSender(path string) ConfigSender {

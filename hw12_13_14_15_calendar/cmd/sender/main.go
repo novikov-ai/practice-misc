@@ -11,7 +11,6 @@ import (
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/sender"
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/ampq"
 	log "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/logger"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/utils"
 )
 
 var configFile string
@@ -22,11 +21,6 @@ func init() {
 
 func main() {
 	flag.Parse()
-
-	if flag.Arg(0) == "version" {
-		utils.PrintVersion()
-		return
-	}
 
 	config := configs.NewConfigSender(configFile)
 
@@ -46,6 +40,8 @@ func main() {
 	sender := sender.New(logger, config, messageBroker)
 
 	errs := make(chan error, 1)
+
+	logger.Info("sender is running...")
 
 	go func() {
 		errs <- sender.Start(ctx, os.Stdout)

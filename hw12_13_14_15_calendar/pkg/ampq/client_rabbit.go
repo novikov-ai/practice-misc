@@ -22,7 +22,7 @@ func New(conf configs.AMPQ, log *logger.Logger) *RabbitClient {
 }
 
 func (rb *RabbitClient) Connect() error {
-	configAMPQ := rb.config.GetAMPQConfig()
+	configAMPQ := rb.config.GetAMQPConfig()
 	conn, err := ampq.Dial(configAMPQ.Host + ":" + configAMPQ.Port)
 	if err != nil {
 		return err
@@ -59,7 +59,7 @@ func (rb *RabbitClient) Send(ctx context.Context, message string) error {
 	}
 
 	err = rb.channel.PublishWithContext(ctx, "", queue.Name, false, false,
-		ampq.Publishing{ContentType: rb.config.GetAMPQConfig().ContentType, Body: []byte(message)})
+		ampq.Publishing{ContentType: rb.config.GetAMQPConfig().ContentType, Body: []byte(message)})
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,6 @@ func (rb *RabbitClient) Receive(ctx context.Context, dst *os.File) error {
 
 	go func() {
 		for m := range messages {
-			// rb.logger.Info("Received: " + string(m.Body))
 			_, err = fmt.Fprintf(dst, "Sent notification: %s\n", m.Body)
 			if err != nil {
 				errs <- err
@@ -92,8 +91,6 @@ func (rb *RabbitClient) Receive(ctx context.Context, dst *os.File) error {
 			}
 		}
 	}()
-
-	// rb.logger.Info("[*] Waiting for new messages...")
 
 	select {
 	case <-ctx.Done():
@@ -107,5 +104,5 @@ func (rb *RabbitClient) Receive(ctx context.Context, dst *os.File) error {
 
 func (rb *RabbitClient) ConfigureQueue() (ampq.Queue, error) {
 	return rb.channel.QueueDeclare(
-		rb.config.GetAMPQConfig().QueueName, false, false, false, false, nil)
+		rb.config.GetAMQPConfig().QueueName, false, false, false, false, nil)
 }

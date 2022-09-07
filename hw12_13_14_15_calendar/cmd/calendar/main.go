@@ -8,10 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/logger"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/utils"
-
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/grpc"
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/logger"
 
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 
@@ -31,7 +29,7 @@ func main() {
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
-		utils.PrintVersion()
+		PrintVersion()
 		return
 	}
 

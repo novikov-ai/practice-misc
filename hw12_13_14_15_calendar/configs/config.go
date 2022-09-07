@@ -14,5 +14,5 @@ type Logger interface {
 
 type AMPQ interface {
 	GetLoggerConfig() groups.Logger
-	GetAMPQConfig() groups.AMQP
+	GetAMQPConfig() groups.AMQP
 }

@@ -30,7 +30,7 @@ func (conf *ConfigScheduler) GetServerConfig() groups.Server {
 	return conf.Server
 }
 
-func (conf *ConfigScheduler) GetAMPQConfig() groups.AMQP {
+func (conf *ConfigScheduler) GetAMQPConfig() groups.AMQP {
 	return conf.AMQP
 }
 
