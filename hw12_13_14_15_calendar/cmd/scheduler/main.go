@@ -12,6 +12,7 @@ import (
 	sqlstorage "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/sql"
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/ampq"
 	log "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/logger"
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/utils"
 )
 
 var configFile string
@@ -24,7 +25,7 @@ func main() {
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
-		printVersion()
+		utils.PrintVersion()
 		return
 	}
 
