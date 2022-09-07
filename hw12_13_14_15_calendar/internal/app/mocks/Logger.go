@@ -11,22 +11,22 @@ type Logger struct {
 
 // Debug provides a mock function with given fields: msg
 func (_m *Logger) Debug(msg string) {
-	_m.Called(msg)
+	_m.Called(msg) //nolint: typecheck
 }
 
 // Error provides a mock function with given fields: msg
 func (_m *Logger) Error(msg string) {
-	_m.Called(msg)
+	_m.Called(msg) //nolint: typecheck
 }
 
 // Info provides a mock function with given fields: msg
 func (_m *Logger) Info(msg string) {
-	_m.Called(msg)
+	_m.Called(msg) //nolint: typecheck
 }
 
 // Warn provides a mock function with given fields: msg
 func (_m *Logger) Warn(msg string) {
-	_m.Called(msg)
+	_m.Called(msg) //nolint: typecheck
 }
 
 type mockConstructorTestingTNewLogger interface {
@@ -39,7 +39,7 @@ func NewLogger(t mockConstructorTestingTNewLogger) *Logger {
 	mock := &Logger{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() { mock.AssertExpectations(t) }) //nolint: typecheck
 
 	return mock
 }
