@@ -6,11 +6,12 @@ import (
 	"net"
 	"time"
 
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/models"
+
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/app"
 	pb "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/pb"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 	"google.golang.org/grpc"
 )
 
@@ -20,7 +21,7 @@ type Service struct {
 }
 
 func Start(ctx context.Context, st app.Storage, logger app.Logger, config configs.Config) error {
-	lsn, err := net.Listen("tcp", ":"+config.Server.PortGRPC)
+	lsn, err := net.Listen("tcp", ":"+config.GetServerConfig().PortGRPC)
 	if err != nil {
 		return err
 	}

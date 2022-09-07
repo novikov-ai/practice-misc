@@ -19,11 +19,12 @@ type Server struct {
 	host, port  string
 }
 
-func NewServer(app *app.App, storage app.Storage, logger app.Logger, config configs.Config) *Server {
+func NewServer(app *app.App, storage app.Storage, logger app.Logger, config configs.Configurator) *Server {
+	serverConfig := config.GetServerConfig()
 	return &Server{
 		application: app, logger: logger,
 		storage: storage,
-		host:    config.Server.Host, port: config.Server.Port,
+		host:    serverConfig.Host, port: serverConfig.Port,
 	}
 }
 

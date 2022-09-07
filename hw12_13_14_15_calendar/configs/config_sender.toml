@@ -1,0 +1,5 @@
+[application]
+name = "Sender"
+
+[amqp]
+host = "amqp://guest:guest@localhost"

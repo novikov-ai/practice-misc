@@ -28,7 +28,7 @@ func TestLogger(t *testing.T) {
 			config := configs.Config{}
 			config.Logger.Level = test.logLevel
 
-			logger := New(config)
+			logger := New(&config)
 
 			w := CustomWriter{}
 			logger.Writer = &w

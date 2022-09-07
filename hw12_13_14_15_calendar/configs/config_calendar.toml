@@ -1,9 +1,8 @@
-[logger]
-level = "debug"
-file = "log-file.txt"
-
 [application]
 name = "Calendar"
+
+[logger]
+level = "debug"
 
 [server]
 host = "localhost"
