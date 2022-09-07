@@ -6,10 +6,11 @@ import (
 	"testing"
 	"time"
 
+	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/models"
+
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/utils"
 
 	st "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage"
-	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 	"github.com/stretchr/testify/require"
 )
 
