@@ -40,7 +40,7 @@ func Start(ctx context.Context, st app.Storage, logger app.Logger, config config
 
 	pb.RegisterCalendarServer(server, service)
 
-	logger.Info(fmt.Sprintf("starting protobuf server on %s\n", lsn.Addr().String()))
+	logger.Info(fmt.Sprintf("starting protobuf server on %s", lsn.Addr().String()))
 
 	if err = server.Serve(lsn); err != nil {
 		return err
