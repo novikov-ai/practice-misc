@@ -26,6 +26,7 @@ func main() {
 	config := configs.NewConfigScheduler(configFile)
 
 	logger := log.New(&config)
+
 	storage := sqlstorage.New(&config)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
