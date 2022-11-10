@@ -12,6 +12,10 @@ WORKDIR ${CODE_DIR}
 # Добавляем инструменты миграции
 RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 
+# Добавляем протобаф + grpc
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
 # Кэшируем слои с модулями
 COPY go.mod .
 COPY go.sum .

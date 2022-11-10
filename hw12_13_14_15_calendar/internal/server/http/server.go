@@ -14,22 +14,34 @@ import (
 
 type Server struct {
 	application *app.App
+	storage     app.Storage
 	logger      app.Logger
 	host, port  string
 }
 
-func NewServer(app *app.App, logger app.Logger, config configs.Config) *Server {
+func NewServer(app *app.App, storage app.Storage, logger app.Logger, config configs.Config) *Server {
 	return &Server{
 		application: app, logger: logger,
-		host: config.Server.Host, port: config.Server.Port,
+		storage: storage,
+		host:    config.Server.Host, port: config.Server.Port,
 	}
 }
 
 func (s *Server) Start(ctx context.Context) error {
 	serverError := make(chan error)
-
 	mux := http.NewServeMux()
+
 	mux.HandleFunc("/welcome", handlerWelcome)
+
+	serviceAPI := NewService(ctx, s.storage, s.logger)
+
+	mux.HandleFunc("/events/add", serviceAPI.handlerAdd)
+	mux.HandleFunc("/events/update", serviceAPI.handlerUpdate)
+	mux.HandleFunc("/events/delete", serviceAPI.handlerDelete)
+	mux.HandleFunc("/events/get-list-for-day", serviceAPI.handlerGetEventsForDay)
+	mux.HandleFunc("/events/get-list-for-week", serviceAPI.handlerGetEventsForWeek)
+	mux.HandleFunc("/events/get-list-for-month", serviceAPI.handlerGetEventsForMonth)
+
 	wrappedMux := NewMiddleware(mux, s.logger)
 
 	go func() {

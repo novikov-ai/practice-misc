@@ -34,4 +34,9 @@ lint: install-lint-deps
 migrate:
 	goose -dir "migrations/" postgres "user=root password=secret dbname=root sslmode=disable" up
 
+generate:
+	rm -rf internal/server/pb
+	mkdir -p internal/server/pb
+	protoc api/calendar.proto --go_out=internal/server/pb --go-grpc_out=internal/server/pb
+
 .PHONY: build run build-img run-img version test lint
