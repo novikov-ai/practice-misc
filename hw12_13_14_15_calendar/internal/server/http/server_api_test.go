@@ -10,11 +10,12 @@ import (
 	"os"
 	"testing"
 
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/logger"
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/models"
+
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/app"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/logger"
 	memorystorage "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/memory"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,8 +34,8 @@ const (
 
 var (
 	ctx     = context.Background()
-	config  = configs.NewConfig("../../../configs/config_template.toml")
-	log     = logger.New(config)
+	config  = configs.NewConfig("../../../configs/config_calendar.toml")
+	log     = logger.New(&config)
 	storage app.Storage
 
 	eventToAdd      = models.Event{ID: eventID, Title: "Mocked event"}
@@ -62,7 +63,7 @@ func init() {
 	}
 
 	calendar := app.New(log, storage)
-	server := NewServer(calendar, storage, log, config)
+	server := NewServer(calendar, storage, log, &config)
 
 	errs := make(chan error, 1)
 	go func() {

@@ -23,7 +23,7 @@ func UnaryServerRequestValidatorInterceptor(validator Validator) grpc.UnaryServe
 
 func ValidateReq(req interface{}) error {
 	switch r := req.(type) {
-	case *pb.AddEventRequest:
+	case *pb.AddEventRequest: //nolint: typecheck
 		if r.Event.Title == "" || r.Event.UserId == "" {
 			return errors.New("middleware validator: you need Title and UserID for a new event")
 		}

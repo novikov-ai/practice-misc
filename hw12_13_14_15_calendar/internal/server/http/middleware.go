@@ -14,16 +14,33 @@ type Middleware struct {
 }
 
 func (m *Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	m.handler.ServeHTTP(w, r)
+	requestTimeStart := time.Now()
+
+	wr := NewResponseWrapper(w)
+	m.handler.ServeHTTP(wr, r)
 
 	methodPathProto := fmt.Sprintf("%s %s %s", r.Method, r.RequestURI, r.Proto)
 
-	latency := 0 // TODO: count request.timeNow - response.timeNow
+	latency := time.Now().Sub(requestTimeStart)
 
 	m.logger.Info(fmt.Sprintf("%s [%s] %s %v %v \"%s\"", r.RemoteAddr, time.Now(), methodPathProto,
-		http.StatusOK, latency, r.UserAgent()))
+		wr.statusCode, latency, r.UserAgent()))
 }
 
 func NewMiddleware(handler http.Handler, logger app.Logger) *Middleware {
 	return &Middleware{handler: handler, logger: logger}
+}
+
+type ResponseWrapper struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func NewResponseWrapper(w http.ResponseWriter) *ResponseWrapper {
+	return &ResponseWrapper{w, http.StatusOK}
+}
+
+func (wr *ResponseWrapper) WriteHeader(code int) {
+	wr.statusCode = code
+	wr.ResponseWriter.WriteHeader(code)
 }

@@ -23,6 +23,9 @@ RUN go mod download
 
 COPY . ${CODE_DIR}
 
+# Добавляем AMQP
+RUN go install github.com/rabbitmq/amqp091-go
+
 # Собираем статический бинарник Go (без зависимостей на Си API),
 # иначе он не будет работать в alpine образе.
 ARG LDFLAGS

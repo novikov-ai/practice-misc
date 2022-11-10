@@ -12,7 +12,7 @@ import (
 func UnaryServerLoggingInterceptor(logger app.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		switch r := req.(type) {
-		case *pb.AddEventRequest:
+		case *pb.AddEventRequest: //nolint: typecheck
 			logger.Info(fmt.Sprintf("event with ID:%s was created", r.Event.Id))
 		case *pb.UpdateEventRequest:
 			logger.Info(fmt.Sprintf("event with ID:%s was updated", r.EventId))

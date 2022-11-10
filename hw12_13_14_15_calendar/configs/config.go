@@ -1,38 +1,18 @@
 package configs
 
-import (
-	"log"
-	"os"
+import "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs/groups"
 
-	"github.com/BurntSushi/toml"
-)
-
-type Config struct {
-	Application struct {
-		Name string `toml:"name"`
-	}
-
-	Logger LoggerConfig
-	Server ServerConfig
-
-	Database struct {
-		InMemory bool   `toml:"in_memory"`
-		Driver   string `toml:"driver"`
-		Source   string `toml:"source"`
-	}
+type Configurator interface {
+	Logger
+	GetDatabaseConfig() groups.Database
+	GetServerConfig() groups.Server
 }
 
-func NewConfig(path string) Config {
-	configRaw, err := os.ReadFile(path)
-	if err != nil {
-		log.Fatalf("reading config %s error: %v", path, err)
-	}
+type Logger interface {
+	GetLoggerConfig() groups.Logger
+}
 
-	config := Config{}
-	err = toml.Unmarshal(configRaw, &config)
-	if err != nil {
-		log.Fatalf("parsing config %s error: %v", path, err)
-	}
-
-	return config
+type AMPQ interface {
+	GetLoggerConfig() groups.Logger
+	GetAMQPConfig() groups.AMQP
 }

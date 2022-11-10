@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/grpc"
+	log "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/logger"
 
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/app"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/memory"
 	sqlstorage "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/sql"
@@ -22,25 +22,26 @@ import (
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "configs/config_template.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "configs/config_calendar.toml", "Path to configuration file")
 }
 
 func main() {
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
-		printVersion()
+		PrintVersion()
 		return
 	}
 
 	config := configs.NewConfig(configFile)
-	logg := logger.New(config)
+
+	logger := log.New(&config)
 
 	var storage app.Storage
 	if config.Database.InMemory {
 		storage = memorystorage.New()
 	} else {
-		storage = sqlstorage.New(config)
+		storage = sqlstorage.New(&config)
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
@@ -49,13 +50,13 @@ func main() {
 
 	err := storage.Connect(ctx)
 	if err != nil {
-		logg.Error(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 
-	calendar := app.New(logg, storage)
+	calendar := app.New(logger, storage)
 
-	server := internalhttp.NewServer(calendar, storage, logg, config)
+	server := internalhttp.NewServer(calendar, storage, logger, &config)
 
 	go func() {
 		<-ctx.Done()
@@ -64,20 +65,20 @@ func main() {
 		defer cancel()
 
 		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+			logger.Error("failed to stop http server: " + err.Error())
 		}
 	}()
 
-	logg.Info("calendar is running...")
+	logger.Info("calendar is running...")
 
 	go func() {
-		if err := grpc.Start(ctx, storage, logg, config); err != nil {
-			logg.Error("failed to start protobuf server: " + err.Error())
+		if err := grpc.Start(ctx, storage, logger, config); err != nil {
+			logger.Error("failed to start protobuf server: " + err.Error())
 		}
 	}()
 
 	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
+		logger.Error("failed to start http server: " + err.Error())
 		cancel()
 		os.Exit(1) //nolint:gocritic
 	}

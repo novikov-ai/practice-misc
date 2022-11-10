@@ -5,11 +5,12 @@ import (
 	"database/sql"
 	"time"
 
+	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/models"
+
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/configs"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	m "github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 )
 
 type Storage struct {
@@ -18,9 +19,9 @@ type Storage struct {
 	db             *sqlx.DB
 }
 
-func New(config configs.Config) *Storage {
-	// TODO: env
-	return &Storage{driver: config.Database.Driver, source: config.Database.Source}
+func New(config configs.Configurator) *Storage {
+	databaseConfig := config.GetDatabaseConfig()
+	return &Storage{driver: databaseConfig.Driver, source: databaseConfig.Source}
 }
 
 func (s *Storage) Connect(ctx context.Context) error {
@@ -139,4 +140,8 @@ func (s *Storage) getEventsByQueryAndArgs(ctx context.Context, query string, arg
 	}
 
 	return eventsForDay
+}
+
+func (s *Storage) RunQuery(ctx context.Context, query string) (*sql.Rows, error) {
+	return s.db.QueryContext(ctx, query)
 }

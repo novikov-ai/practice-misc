@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/pkg/models"
+
 	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/app/mocks"
-	"github.com/novikov-ai/practice-misc/hw12_13_14_15_calendar/internal/storage/models"
 	"github.com/stretchr/testify/require"
 )
 

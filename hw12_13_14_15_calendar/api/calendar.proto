@@ -58,11 +58,4 @@ message Event {
   google.protobuf.Timestamp date_time = 5;
   google.protobuf.Duration duration = 6;
   google.protobuf.Duration notified_before = 7;
-
-  message Notification{
-    string id = 1;
-    string title = 2;
-    string user_id = 3;
-    google.protobuf.Timestamp date = 4;
-  }
 }

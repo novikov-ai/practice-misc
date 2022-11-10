@@ -1,6 +1,6 @@
-package configs
+package groups
 
-type ServerConfig struct {
+type Server struct {
 	Host     string `toml:"host"`
 	Port     string `toml:"port"`
 	PortGRPC string `toml:"port_grpc"`
